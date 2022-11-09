@@ -1,0 +1,3 @@
+[submodule "Fast-DDS"]
+	path = Fast-DDS
+	url = https://github.com/eProsima/Fast-DDS
