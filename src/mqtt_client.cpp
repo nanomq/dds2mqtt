@@ -176,32 +176,6 @@ publish_cb(void *args)
 
 struct pub_params params;
 
-static int
-sqlite_config(nng_socket *sock, uint8_t proto_ver)
-{
-#if defined(NNG_SUPP_SQLITE)
-	int rv;
-	// create sqlite option
-	nng_mqtt_sqlite_option *sqlite;
-	if ((rv = nng_mqtt_alloc_sqlite_opt(&sqlite)) != 0) {
-		fatal("nng_mqtt_alloc_sqlite_opt", rv);
-	}
-	// set sqlite option
-	nng_mqtt_set_sqlite_enable(sqlite, true);
-	nng_mqtt_set_sqlite_flush_threshold(sqlite, 10);
-	nng_mqtt_set_sqlite_max_rows(sqlite, 20);
-	nng_mqtt_set_sqlite_db_dir(sqlite, "/tmp/nanomq");
-
-	// init sqlite db
-	nng_mqtt_sqlite_db_init(sqlite, "mqtt_client.db", proto_ver);
-
-	// set sqlite option pointer to socket
-	return nng_socket_set_ptr(*sock, NNG_OPT_MQTT_SQLITE, sqlite);
-#else
-	return (0);
-#endif
-}
-
 static void
 sub_callback(void *arg) {
 	nng_mqtt_client *client = (nng_mqtt_client *) arg;
@@ -236,7 +210,7 @@ mqtt_connect(nng_socket *sock, const char *url)
 	nng_dialer  dialer;
 	client_connect(sock, &dialer, url, verbose);
 
-	// TODO create a thread to recv mqtt msg
+	// TODO create a thread to send / recv mqtt msg
 
 	return 0;
 }
@@ -246,12 +220,44 @@ mqtt_disconnect(nng_socket *sock)
 {}
 
 int
-mqtt_subscribe(nng_socket *sock, const char *topic)
-{}
+mqtt_subscribe(nng_socket *sock, const char *topic, const uint8_t qos)
+{
+	nng_mqtt_topic_qos subscriptions[] = {
+		{
+		    .qos   = qos,
+		    .topic = {
+				.buf    = (uint8_t *) topic,
+		        .length = (uint32_t) strlen(topic),
+			},
+		},
+	};
+
+	nng_mqtt_cb_opt cb_opt = {
+		.sub_ack_cb = sub_callback,
+		.unsub_ack_cb = unsub_callback,
+	};
+
+	// Asynchronous subscription
+	nng_mqtt_client *client = nng_mqtt_client_alloc(sock, &cb_opt, true);
+	nng_mqtt_subscribe_async(client, subscriptions, 1, NULL);
+
+	return 0;
+}
 
 int
-mqtt_unsubscribe(nng_socket *sock, const char *topic, const uint8_t qos)
-{}
+mqtt_unsubscribe(nng_socket *sock, const char *topic)
+{
+	nng_mqtt_topic unsubscriptions[] = {
+		{
+		    .buf    = (uint8_t *) topic,
+		    .length = (uint32_t) strlen(topic),
+		},
+	};
+
+	// nng_mqtt_unsubscribe_async(client, unsubscriptions, 1, NULL);
+
+	return 0;
+}
 
 int
 mqtt_publish(nng_socket *sock, const char *topic, uint8_t qos, uint8_t *data, int len)
@@ -312,8 +318,6 @@ main(const int argc, const char **argv)
 		params.verbose  = verbose;
 
 		char thread_name[20];
-
-		sqlite_config(params.sock, MQTT_PROTOCOL_VERSION_v311);
 
 		size_t i = 0;
 		for (i = 0; i < nthread; i++) {

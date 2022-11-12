@@ -8,9 +8,9 @@ int mqtt_connect(nng_socket *sock, const char *url);
 
 int mqtt_disconnect(nng_socket *sock);
 
-int mqtt_subscribe(nng_socket *sock, const char *topic);
+int mqtt_subscribe(nng_socket *sock, const char *topic, const uint8_t qos);
 
-int mqtt_unsubscribe(nng_socket *sock, const char *topic, const uint8_t qos);
+int mqtt_unsubscribe(nng_socket *sock, const char *topic);
 
 int mqtt_publish(nng_socket *sock, const char *topic, uint8_t qos, uint8_t *data, int len);
 
