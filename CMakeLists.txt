@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16.3)
 
-project(dds2mqtt VERSION 1 LANGUAGES CXX)
+project(dds2mqtt VERSION 1 LANGUAGES CXX C)
 
 # Find requirements
 if(NOT fastcdr_FOUND)
@@ -11,7 +11,9 @@ if(NOT fastrtps_FOUND)
     find_package(fastrtps REQUIRED)
 endif()
 
-find_package(nng REQUIRED)
+find_package(nng CONFIG REQUIRED)
+
+find_package(Threads)
 
 #Check C++11
 include(CheckCXXCompilerFlag)
@@ -32,4 +34,4 @@ target_compile_definitions(dds2mqtt PRIVATE
     $<$<BOOL:${INTERNAL_DEBUG}>:__INTERNALDEBUG> # Internal debug activated.
 )
 
-target_link_libraries(dds2mqtt fastrtps fastcdr fastdds::optionparser)
+target_link_libraries(dds2mqtt fastrtps fastcdr fastdds::optionparser nng)
