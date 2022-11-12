@@ -49,26 +49,6 @@ fatal(const char *msg, int rv)
 	fprintf(stderr, "%s: %s\n", msg, nng_strerror(rv));
 }
 
-// Print the given string limited to 80 columns.
-//
-// The `prefix` should be a null terminated string much smaller than 80,
-// `str` and `len` designates the string to be printed, `quote` specifies
-// whether to print in single quotes.
-void
-print80(const char *prefix, const char *str, size_t len, bool quote)
-{
-	size_t max_len = 80 - strlen(prefix) - (quote ? 2 : 0);
-	char * q       = quote ? "'" : "";
-	if (len <= max_len) {
-		// case the output fit in a line
-		printf("%s%s%.*s%s\n", prefix, q, (int) len, str, q);
-	} else {
-		// case we truncate the payload with ellipses
-		printf(
-		    "%s%s%.*s%s...\n", prefix, q, (int) (max_len - 3), str, q);
-	}
-}
-
 static void
 disconnect_cb(nng_pipe p, nng_pipe_ev ev, void *arg)
 {
@@ -185,7 +165,7 @@ void
 publish_cb(void *args)
 {
 	int                rv;
-	struct pub_params *params = args;
+	struct pub_params *params = (struct pub_params *)args;
 	do {
 		client_publish(*params->sock, params->topic, params->data,
 		    params->data_len, params->qos, params->verbose);
@@ -250,7 +230,16 @@ unsub_callback(void *arg) {
 
 int
 mqtt_connect(nng_socket *sock, const char *url)
-{}
+{
+	bool        verbose = 1;
+
+	nng_dialer  dialer;
+	client_connect(sock, &dialer, url, verbose);
+
+	// TODO create a thread to recv mqtt msg
+
+	return 0;
+}
 
 int
 mqtt_disconnect(nng_socket *sock)
@@ -266,7 +255,9 @@ mqtt_unsubscribe(nng_socket *sock, const char *topic, const uint8_t qos)
 
 int
 mqtt_publish(nng_socket *sock, const char *topic, uint8_t qos, uint8_t *data, int len)
-{}
+{
+	return client_publish(*sock, topic, data, len, qos, 1);
+}
 
 int
 mqtt_recvmsg(nng_socket *sock, const char *topic, uint8_t *qos, uint8_t **datap, int *lenp)

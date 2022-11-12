@@ -1,6 +1,9 @@
 #ifndef DDS2MQTT_MQTT_CLIENT
 #define DDS2MQTT_MQTT_CLIENT
 
+#include <nng/mqtt/mqtt_client.h>
+#include <nng/nng.h>
+
 int mqtt_connect(nng_socket *sock, const char *url);
 
 int mqtt_disconnect(nng_socket *sock);
