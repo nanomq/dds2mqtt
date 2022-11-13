@@ -232,6 +232,9 @@ mqtt_subscribe(nng_socket *sock, const char *topic, const uint8_t qos)
 		},
 	};
 
+	// Sync subscription
+	return nng_mqtt_subscribe(sock, subscriptions, 1, NULL);
+	/*
 	nng_mqtt_cb_opt cb_opt = {
 		.sub_ack_cb = sub_callback,
 		.unsub_ack_cb = unsub_callback,
@@ -242,6 +245,7 @@ mqtt_subscribe(nng_socket *sock, const char *topic, const uint8_t qos)
 	nng_mqtt_subscribe_async(client, subscriptions, 1, NULL);
 
 	return 0;
+	*/
 }
 
 int
@@ -266,8 +270,32 @@ mqtt_publish(nng_socket *sock, const char *topic, uint8_t qos, uint8_t *data, in
 }
 
 int
-mqtt_recvmsg(nng_socket *sock, const char *topic, uint8_t *qos, uint8_t **datap, int *lenp)
-{}
+mqtt_recvmsg(nng_socket *sock, nng_msg **msgp)
+{
+	/*
+	const char * prefix = "MQTTCMD-";
+	if (strncmp(topic, prefix, strlen(prefix)) != 0) {
+		printf("Topic should has prefix [%s].\n", prefix);
+		return -1;
+	}
+	*/
+
+	int rv;
+	nng_msg *msg;
+	if ((rv = nng_recvmsg(*sock, &msg, 0)) != 0) {
+		printf("Error in nng_recvmsg %d.\n", rv);
+		return -2;
+	}
+
+	// we should only receive publish messages
+	if (nng_mqtt_msg_get_packet_type(msg) != NNG_MQTT_PUBLISH) {
+		printf("Invalid MQTT Msg type.\n");
+		return -3;
+	}
+
+	*msgp = msg;
+	return 0;
+}
 
 /*
 int

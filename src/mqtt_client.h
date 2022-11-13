@@ -14,6 +14,6 @@ int mqtt_unsubscribe(nng_socket *sock, const char *topic);
 
 int mqtt_publish(nng_socket *sock, const char *topic, uint8_t qos, uint8_t *data, int len);
 
-int mqtt_recvmsg(nng_socket *sock, const char *topic, uint8_t *qos, uint8_t **datap, int *lenp);
+int mqtt_recvmsg(nng_socket *sock, nng_msg **msgp);
 
 #endif
