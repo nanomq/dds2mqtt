@@ -200,6 +200,8 @@ void HelloWorldPublisher::runThread(uint32_t samples, uint32_t sleep)
               << std::endl;
         }
 
+		nng_msg_free(msg);
+
         std::this_thread::sleep_for(std::chrono::milliseconds(sleep));
     }
 }
