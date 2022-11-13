@@ -170,6 +170,7 @@ void HelloWorldPublisher::runThread(uint32_t samples, uint32_t sleep)
 {
     nng_msg* msg;
     nng_socket sock;
+    uint32_t len;
     const char* url = "mqtt-tcp://127.0.0.1:1883";
     const char* topic = "MQTTCMD-HelloWorldTopic";
 
@@ -181,6 +182,18 @@ void HelloWorldPublisher::runThread(uint32_t samples, uint32_t sleep)
             continue;
         }
 
+		const char *t = nng_mqtt_msg_get_publish_topic(msg, &len);
+		std::cout << "Topic is " << t << std::endl;
+		if (strncmp(t, topic, len) != 0) {
+			continue;
+		}
+
+		char *data = (char *)nng_mqtt_msg_get_publish_payload(msg, &len);
+		if (!data || len == 0) {
+			continue;
+		}
+
+		hello_.message(std::string(data));
         if (publish(false)) {
             std::cout << "Message: " << hello_.message()
               << " with index: " << hello_.index() << " SENT"
