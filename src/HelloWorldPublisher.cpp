@@ -28,6 +28,13 @@
 
 #include <thread>
 
+// MQTT
+#include <nng/mqtt/mqtt_client.h>
+#include <nng/nng.h>
+#include <nng/supplemental/util/platform.h>
+
+#include "mqtt_client.h"
+
 using namespace eprosima::fastdds::dds;
 
 HelloWorldPublisher::HelloWorldPublisher()
@@ -159,37 +166,28 @@ void HelloWorldPublisher::PubListener::on_publication_matched(
     }
 }
 
-void HelloWorldPublisher::runThread(
-        uint32_t samples,
-        uint32_t sleep)
+void HelloWorldPublisher::runThread(uint32_t samples, uint32_t sleep)
 {
-    if (samples == 0)
-    {
-        while (!stop_)
-        {
-            if (publish(false))
-            {
-                std::cout << "Message: " << hello_.message() << " with index: " << hello_.index()
-                          << " SENT" << std::endl;
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(sleep));
+    nng_msg* msg;
+    nng_socket sock;
+    const char* url = "mqtt-tcp://127.0.0.1:1883";
+    const char* topic = "MQTTCMD-HelloWorldTopic";
+
+    mqtt_connect(&sock, url);
+    mqtt_subscribe(&sock, topic, 0);
+
+    while (!stop_) {
+        if (0 != mqtt_recvmsg(&sock, &msg)) {
+            continue;
         }
-    }
-    else
-    {
-        for (uint32_t i = 0; i < samples; ++i)
-        {
-            if (!publish())
-            {
-                --i;
-            }
-            else
-            {
-                std::cout << "Message: " << hello_.message() << " with index: " << hello_.index()
-                          << " SENT" << std::endl;
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(sleep));
+
+        if (publish(false)) {
+            std::cout << "Message: " << hello_.message()
+              << " with index: " << hello_.index() << " SENT"
+              << std::endl;
         }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(sleep));
     }
 }
 
