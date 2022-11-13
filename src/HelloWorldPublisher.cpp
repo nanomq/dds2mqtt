@@ -183,7 +183,7 @@ void HelloWorldPublisher::runThread(uint32_t samples, uint32_t sleep)
         }
 
 		const char *t = nng_mqtt_msg_get_publish_topic(msg, &len);
-		std::cout << "Topic is " << t << std::endl;
+		std::cout.write(t, len); std::cout << std::endl;
 		if (strncmp(t, topic, len) != 0) {
 			continue;
 		}
