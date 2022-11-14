@@ -34,6 +34,7 @@
 #include <nng/supplemental/util/platform.h>
 
 #include "mqtt_client.h"
+#include "HelloWorldMQTTTypes.h"
 
 using namespace eprosima::fastdds::dds;
 
@@ -188,12 +189,16 @@ void HelloWorldPublisher::runThread(uint32_t samples, uint32_t sleep)
 			continue;
 		}
 
-		char *data = (char *)nng_mqtt_msg_get_publish_payload(msg, &len);
+		fixed_mqtt_msg mqttmsg;
+		uint8_t *data = nng_mqtt_msg_get_publish_payload(msg, &len);
 		if (!data || len == 0) {
 			continue;
 		}
+		mqttmsg.payload = data;
+		mqttmsg.len     = len;
 
-		hello_.message(std::string(data));
+		MQTT_to_HelloWorld(&mqttmsg, &hello_);
+
         if (publish(false)) {
             std::cout << "Message: " << hello_.message()
               << " with index: " << hello_.index() << " SENT"

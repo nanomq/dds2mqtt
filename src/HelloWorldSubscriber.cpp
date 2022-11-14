@@ -17,6 +17,7 @@
  *
  */
 
+#include "HelloWorldMQTTTypes.h"
 #include "mqtt_client.h"
 
 #include "HelloWorldSubscriber.h"
@@ -173,9 +174,9 @@ void HelloWorldSubscriber::SubListener::on_data_available(
             // Print your structure data here.
             std::cout << "Topic: " << this->topic << " Message " << hello_.message() << " " << hello_.index() << " RECEIVED" << std::endl;
 
-			const char *data = hello_.message().c_str();
-			int  sz = hello_.message().size();
-			int rv = mqtt_publish(&mqttsock, (char *)this->topic, 0, (uint8_t *)data, sz);
+			fixed_mqtt_msg mqttmsg;
+			HelloWorld_to_MQTT(&hello_, &mqttmsg);
+			int rv = mqtt_publish(&mqttsock, (char *)this->topic, 0, mqttmsg.payload, mqttmsg.len);
         }
     }
 }
