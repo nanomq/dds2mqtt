@@ -39,10 +39,6 @@
 #include <nng/nng.h>
 #include <nng/supplemental/util/platform.h>
 
-// Subcommands
-#define PUBLISH "pub"
-#define SUBSCRIBE "sub"
-
 void
 fatal(const char *msg, int rv)
 {
