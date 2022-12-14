@@ -1,9 +1,10 @@
 #include "dds/dds.h"
-#include "HelloWorldData.h"
+#include "MqttData.h"
+#include "subpub.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-int main (int argc, char ** argv)
+int publisher (int argc, char ** argv)
 {
   dds_entity_t participant;
   dds_entity_t topic;

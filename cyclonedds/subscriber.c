@@ -1,5 +1,6 @@
 #include "dds/dds.h"
-#include "HelloWorldData.h"
+#include "MqttData.h"
+#include "subpub.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -7,7 +8,7 @@
 /* An array of one message (aka sample in dds terms) will be used. */
 #define MAX_SAMPLES 1
 
-int main (int argc, char ** argv)
+int subscriber (int argc, char ** argv)
 {
   dds_entity_t participant;
   dds_entity_t topic;
