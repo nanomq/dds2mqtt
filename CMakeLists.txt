@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.16.3)
 project(dds2mqtt VERSION 1 LANGUAGES CXX C)
 
 # Select a DDS as backend
-option (DDS_BACKEND_CYCLONEDDS "Using cyclonedds as dds backend" OFF)
-option (DDS_BACKEND_FASTDDS "Using fastdds as dds backend" ON)
+option (DDS_BACKEND_CYCLONEDDS "Using cyclonedds as dds backend" ON)
+option (DDS_BACKEND_FASTDDS "Using fastdds as dds backend" OFF)
 
 # Find requirements for fastdds
 if(DDS_BACKEND_FASTDDS)
@@ -50,9 +50,9 @@ if(DDS_BACKEND_FASTDDS)
 endif(DDS_BACKEND_FASTDDS)
 
 if(DDS_BACKEND_CYCLONEDDS)
-  idlc_generate(TARGET MqttData_lib FILES "HelloWorldData.idl" WARNINGS no-implicit-extensibility)
+  idlc_generate(TARGET MqttData_lib FILES "cyclonedds/MqttData.idl" WARNINGS no-implicit-extensibility)
 
-  message(STATUS "FASTDDS as backend for dds")
+  message(STATUS "CycloneDDS as backend for dds")
 
   file(GLOB DDS2MQTT_SOURCES "cyclonedds/*.c")
   file(GLOB DDS2MQTT_SOURCES_CPP "cyclonedds/*.cpp")
