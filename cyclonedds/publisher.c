@@ -1,5 +1,5 @@
 #include "dds/dds.h"
-#include "MqttData.h"
+#include "HelloWorld.h"
 #include "subpub.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,7 +10,7 @@ int publisher (int argc, char ** argv)
   dds_entity_t topic;
   dds_entity_t writer;
   dds_return_t rc;
-  HelloWorldData_Msg msg;
+  HelloWorld   msg;
   uint32_t status = 0;
   (void)argc;
   (void)argv;
@@ -22,7 +22,7 @@ int publisher (int argc, char ** argv)
 
   /* Create a Topic. */
   topic = dds_create_topic (
-    participant, &HelloWorldData_Msg_desc, "HelloWorldData_Msg", NULL, NULL);
+    participant, &HelloWorld_desc, "HelloWorld", NULL, NULL);
   if (topic < 0)
     DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topic));
 
@@ -49,11 +49,11 @@ int publisher (int argc, char ** argv)
   }
 
   /* Create a message to write. */
-  msg.userID = 1;
+  msg.index = 1;
   msg.message = "Hello World";
 
   printf ("=== [Publisher]  Writing : ");
-  printf ("Message (%"PRId32", %s)\n", msg.userID, msg.message);
+  printf ("Message (%"PRId32", %s)\n", msg.index, msg.message);
   fflush (stdout);
 
   rc = dds_write (writer, &msg);
