@@ -50,7 +50,7 @@ if(DDS_BACKEND_FASTDDS)
 endif(DDS_BACKEND_FASTDDS)
 
 if(DDS_BACKEND_CYCLONEDDS)
-  idlc_generate(TARGET MqttData_lib FILES "cyclonedds/MqttData.idl" WARNINGS no-implicit-extensibility)
+  idlc_generate(TARGET HelloWorld_lib FILES "cyclonedds/HelloWorld.idl" WARNINGS no-implicit-extensibility)
 
   message(STATUS "CycloneDDS as backend for dds")
 
@@ -69,5 +69,5 @@ if(DDS_BACKEND_FASTDDS)
 endif(DDS_BACKEND_FASTDDS)
 
 if(DDS_BACKEND_CYCLONEDDS)
-  target_link_libraries(dds2mqtt MqttData_lib CycloneDDS::ddsc)
+  target_link_libraries(dds2mqtt HelloWorld_lib CycloneDDS::ddsc)
 endif(DDS_BACKEND_CYCLONEDDS)
