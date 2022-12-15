@@ -69,5 +69,5 @@ if(DDS_BACKEND_FASTDDS)
 endif(DDS_BACKEND_FASTDDS)
 
 if(DDS_BACKEND_CYCLONEDDS)
-  target_link_libraries(dds2mqtt HelloWorld_lib CycloneDDS::ddsc)
+  target_link_libraries(dds2mqtt HelloWorld_lib CycloneDDS::ddsc nng)
 endif(DDS_BACKEND_CYCLONEDDS)
