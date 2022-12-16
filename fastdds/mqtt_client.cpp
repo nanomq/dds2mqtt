@@ -147,6 +147,7 @@ client_publish(nng_socket sock, const char *topic, uint8_t *payload,
 	return rv;
 }
 
+/*
 static void
 sub_callback(void *arg) {
 	nng_mqtt_client *client = (nng_mqtt_client *) arg;
@@ -172,6 +173,7 @@ unsub_callback(void *arg) {
 	// printf("suback %d \n", *code);
 	nng_msg_free(msg);
 }
+*/
 
 int
 mqtt_connect(nng_socket *sock, const char *url)
