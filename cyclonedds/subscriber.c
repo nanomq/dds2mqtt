@@ -62,7 +62,7 @@ int subscriber (int argc, char ** argv)
   {
     /* Do the actual read.
      * The return value contains the number of read samples. */
-    rc = dds_read (reader, samples, infos, MAX_SAMPLES, MAX_SAMPLES);
+    rc = dds_take (reader, samples, infos, MAX_SAMPLES, MAX_SAMPLES);
     if (rc < 0)
       DDS_FATAL("dds_read: %s\n", dds_strretcode(-rc));
 
@@ -80,8 +80,6 @@ int subscriber (int argc, char ** argv)
 	  int rv = mqtt_publish(&mqttsock, "HelloWorld", 0, mqttmsg.payload, mqttmsg.len);
 	  if (rv != 0)
 		  printf("error in mqtt publish.\n");
-
-      break;
     }
     else
     {
