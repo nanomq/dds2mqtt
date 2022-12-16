@@ -66,35 +66,36 @@ int publisher (int argc, char ** argv)
   mqtt_connect(&sock, url);
   mqtt_subscribe(&sock, mqtttopic, 0);
 
-  if (0 != mqtt_recvmsg(&sock, &rmsg)) {
-	  printf("Error in recv.\n");
+  while (1) {
+    if (0 != mqtt_recvmsg(&sock, &rmsg)) {
+      printf("Error in recv.\n");
+    }
+    const char* t = nng_mqtt_msg_get_publish_topic(rmsg, &len);
+    printf("Topic: %-*s\n", len, t);
+    if (strncmp(t, mqtttopic, len) != 0) {
+      printf("Error in Topic.\n");
+    }
+
+    fixed_mqtt_msg mqttmsg;
+    uint8_t* data = nng_mqtt_msg_get_publish_payload(rmsg, &len);
+    if (!data || len == 0) {
+      printf("Error in msg.\n");
+    }
+    mqttmsg.payload = data;
+    mqttmsg.len = len;
+
+    MQTT_to_HelloWorld(&mqttmsg, &msg);
+
+    /* Create a message to write. */
+    msg.index = 1;
+
+    printf("=== [Publisher]  Writing : ");
+    printf("Message (%" PRId32 ", %s)\n", msg.index, msg.message);
+    fflush(stdout);
+
+    rc = dds_write(writer, &msg);
+    if (rc != DDS_RETCODE_OK) DDS_FATAL("dds_write: %s\n", dds_strretcode(-rc));
   }
-  const char *t = nng_mqtt_msg_get_publish_topic(rmsg, &len);
-  printf("%-*s\n", len, t);
-  if (strncmp(t, mqtttopic, len) != 0) {
-	  printf("Error in Topic.\n");
-  }
-
-  fixed_mqtt_msg mqttmsg;
-  uint8_t *data = nng_mqtt_msg_get_publish_payload(rmsg, &len);
-  if (!data || len == 0) {
-	  printf("Error in msg.\n");
-  }
-  mqttmsg.payload = data;
-  mqttmsg.len     = len;
-
-  MQTT_to_HelloWorld(&mqttmsg, &msg);
-
-  /* Create a message to write. */
-  msg.index = 1;
-
-  printf ("=== [Publisher]  Writing : ");
-  printf ("Message (%"PRId32", %s)\n", msg.index, msg.message);
-  fflush (stdout);
-
-  rc = dds_write (writer, &msg);
-  if (rc != DDS_RETCODE_OK)
-    DDS_FATAL("dds_write: %s\n", dds_strretcode(-rc));
 
   /* Deleting the participant will delete all its children recursively as well. */
   rc = dds_delete (participant);
