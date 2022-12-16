@@ -98,7 +98,7 @@ bool HelloWorldPublisher::init(
     }
 
     topic_ = participant_->create_topic(
-        "HelloWorldTopic",
+        "HelloWorld",
         "HelloWorld",
         tqos);
 
@@ -173,7 +173,7 @@ void HelloWorldPublisher::runThread(uint32_t samples, uint32_t sleep)
     nng_socket sock;
     uint32_t len;
     const char* url = "mqtt-tcp://127.0.0.1:1883";
-    const char* topic = "MQTTCMD-HelloWorldTopic";
+    const char* topic = "MQTTCMD-HelloWorld";
 
     mqtt_connect(&sock, url);
     mqtt_subscribe(&sock, topic, 0);

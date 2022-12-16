@@ -61,7 +61,7 @@ int publisher (int argc, char ** argv)
   nng_socket sock;
   uint32_t len;
   const char* url = "mqtt-tcp://127.0.0.1:1883";
-  const char* mqtttopic = "MQTTCMD-HelloWorldTopic";
+  const char* mqtttopic = "MQTTCMD-HelloWorld";
 
   mqtt_connect(&sock, url);
   mqtt_subscribe(&sock, mqtttopic, 0);

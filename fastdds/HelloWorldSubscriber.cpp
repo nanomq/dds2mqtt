@@ -91,7 +91,7 @@ bool HelloWorldSubscriber::init(
     }
 
     topic_ = participant_->create_topic(
-        "HelloWorldTopic",
+        "HelloWorld",
         "HelloWorld",
         tqos);
 
