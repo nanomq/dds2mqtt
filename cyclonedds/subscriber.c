@@ -5,8 +5,15 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "mqtt_client.h"
+#include "HelloWorldMQTTTypes.h"
+
 /* An array of one message (aka sample in dds terms) will be used. */
 #define MAX_SAMPLES 1
+
+#define MQTT_URL "mqtt-tcp://127.0.0.1:1883"
+
+static nng_socket mqttsock;
 
 int subscriber (int argc, char ** argv)
 {
@@ -40,6 +47,9 @@ int subscriber (int argc, char ** argv)
     DDS_FATAL("dds_create_reader: %s\n", dds_strretcode(-reader));
   dds_delete_qos(qos);
 
+  // MQTT Client create
+  mqtt_connect(&mqttsock, MQTT_URL);
+
   printf ("\n=== [Subscriber] Waiting for a sample ...\n");
   fflush (stdout);
 
@@ -64,6 +74,13 @@ int subscriber (int argc, char ** argv)
       printf ("=== [Subscriber] Received : ");
       printf ("Message (%"PRId32", %s)\n", msg->index, msg->message);
       fflush (stdout);
+
+	  fixed_mqtt_msg mqttmsg;
+	  HelloWorld_to_MQTT(msg, &mqttmsg);
+	  int rv = mqtt_publish(&mqttsock, "HelloWorld", 0, mqttmsg.payload, mqttmsg.len);
+	  if (rv != 0)
+		  printf("error in mqtt publish.\n");
+
       break;
     }
     else

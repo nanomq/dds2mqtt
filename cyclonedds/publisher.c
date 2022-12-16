@@ -3,6 +3,15 @@
 #include "subpub.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+// MQTT
+#include <nng/mqtt/mqtt_client.h>
+#include <nng/nng.h>
+#include <nng/supplemental/util/platform.h>
+
+#include "mqtt_client.h"
+#include "HelloWorldMQTTTypes.h"
 
 int publisher (int argc, char ** argv)
 {
@@ -48,9 +57,36 @@ int publisher (int argc, char ** argv)
     dds_sleepfor (DDS_MSECS (20));
   }
 
+  nng_msg* rmsg;
+  nng_socket sock;
+  uint32_t len;
+  const char* url = "mqtt-tcp://127.0.0.1:1883";
+  const char* mqtttopic = "MQTTCMD-HelloWorldTopic";
+
+  mqtt_connect(&sock, url);
+  mqtt_subscribe(&sock, mqtttopic, 0);
+
+  if (0 != mqtt_recvmsg(&sock, &rmsg)) {
+	  printf("Error in recv.\n");
+  }
+  const char *t = nng_mqtt_msg_get_publish_topic(rmsg, &len);
+  printf("%-*s\n", len, t);
+  if (strncmp(t, mqtttopic, len) != 0) {
+	  printf("Error in Topic.\n");
+  }
+
+  fixed_mqtt_msg mqttmsg;
+  uint8_t *data = nng_mqtt_msg_get_publish_payload(rmsg, &len);
+  if (!data || len == 0) {
+	  printf("Error in msg.\n");
+  }
+  mqttmsg.payload = data;
+  mqttmsg.len     = len;
+
+  MQTT_to_HelloWorld(&mqttmsg, &msg);
+
   /* Create a message to write. */
   msg.index = 1;
-  msg.message = "Hello World";
 
   printf ("=== [Publisher]  Writing : ");
   printf ("Message (%"PRId32", %s)\n", msg.index, msg.message);
