@@ -6,8 +6,15 @@ FastDDS node <--local--> NanoSDK client <--network--> NanoMQ Broker
 
 ## Requires
 
-FastDDS version == 2.8.x
+Select one of DDS backends.
 
-NanoSDK version >= 0.7.5
++ FastDDS version == 2.8.x
 
-Note. libfastrtps and libnng should be installed.
++ CycloneDDS version == 0.10.1
+
+NanoSDK is a MQTT SDK.
+
++ NanoSDK version >= 0.7.5
+
+Note. libfastrtps/libddsc and libnng should be installed.
+
