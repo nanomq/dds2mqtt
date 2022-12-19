@@ -18,3 +18,6 @@ NanoSDK is a MQTT SDK.
 
 Note. libfastrtps/libddsc and libnng should be installed.
 
+## NOTE
+
+Select topics from configure file is not supported.
