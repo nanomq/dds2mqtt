@@ -4,16 +4,19 @@
 #include <nng/mqtt/mqtt_client.h>
 #include <nng/nng.h>
 
-int mqtt_connect(nng_socket *sock, const char *url);
+typedef struct mqtt_cli mqtt_cli;
 
-int mqtt_disconnect(nng_socket *sock);
+int mqtt_connect(mqtt_cli *cli, const char *url);
 
-int mqtt_subscribe(nng_socket *sock, const char *topic, const uint8_t qos);
+int mqtt_disconnect(mqtt_cli *cli);
 
-int mqtt_unsubscribe(nng_socket *sock, const char *topic);
+int mqtt_subscribe(mqtt_cli *cli, const char *topic, const uint8_t qos);
 
-int mqtt_publish(nng_socket *sock, const char *topic, uint8_t qos, uint8_t *data, int len);
+// Not supported yet
+int mqtt_unsubscribe(mqtt_cli *cli, const char *topic);
 
-int mqtt_recvmsg(nng_socket *sock, nng_msg **msgp);
+int mqtt_publish(mqtt_cli *cli, const char *topic, uint8_t qos, uint8_t *data, int len);
+
+int mqtt_recvmsg(mqtt_cli *cli, nng_msg **msgp);
 
 #endif
