@@ -138,6 +138,7 @@ struct mqtt_cli {
 	char *     url;
 	pthread_t  thr;
 	int        running;
+	nftp_vec  *handleq;
 };
 
 static int
@@ -165,6 +166,8 @@ mqtt_connect(mqtt_cli *cli, const char *url)
 
 	// Start mqtt thread
 	cli->running = 1;
+
+	nftp_vec_alloc(&cli->handleq);
 
 	// Create a thread to send / recv mqtt msg
 	pthread_create(&cli->thr, NULL, mqtt_loop, (void *)cli);

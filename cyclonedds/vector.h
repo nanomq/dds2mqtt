@@ -11,6 +11,13 @@
 #ifndef DDS2MQTT_VECTOR
 #define DDS2MQTT_VECTOR
 
+typedef struct handle handle;
+struct handle {
+	int    type; // 1->send 2->recv
+	void * data;
+	int    len;
+};
+
 typedef struct _vec nftp_vec;
 
 int nftp_vec_alloc(nftp_vec **);
