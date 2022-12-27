@@ -135,6 +135,29 @@ client_publish(nng_socket sock, const char *topic, uint8_t *payload,
 	return rv;
 }
 
+// TODO
+// It works in a NONBLOCK way
+// Return 0 when got msg. return 1 when no msg; else errors happened
+int
+client_recv(mqtt_cli *cli, nng_msg **msgp)
+{
+	int rv;
+	nng_msg *msg;
+	if ((rv = nng_recvmsg(cli->sock, &msg, 0)) != 0) {
+		printf("Error in nng_recvmsg %d.\n", rv);
+		return -2;
+	}
+
+	// we should only receive publish messages
+	if (nng_mqtt_msg_get_packet_type(msg) != NNG_MQTT_PUBLISH) {
+		printf("Invalid MQTT Msg type.\n");
+		return -3;
+	}
+
+	*msgp = msg;
+	return 0;
+}
+
 static void
 mqtt_loop(void *arg)
 {
