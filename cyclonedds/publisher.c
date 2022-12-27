@@ -58,16 +58,16 @@ int publisher (int argc, char ** argv)
   }
 
   nng_msg* rmsg;
-  nng_socket sock;
+  mqtt_cli cli;
   uint32_t len;
   const char* url = "mqtt-tcp://127.0.0.1:1883";
   const char* mqtttopic = "MQTTCMD-HelloWorld";
 
-  mqtt_connect(&sock, url);
-  mqtt_subscribe(&sock, mqtttopic, 0);
+  mqtt_connect(&cli, url);
+  mqtt_subscribe(&cli, mqtttopic, 0);
 
   while (1) {
-    if (0 != mqtt_recvmsg(&sock, &rmsg)) {
+    if (0 != mqtt_recvmsg(&cli, &rmsg)) {
       printf("Error in recv.\n");
     }
     const char* t = nng_mqtt_msg_get_publish_topic(rmsg, &len);

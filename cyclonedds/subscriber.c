@@ -13,7 +13,7 @@
 
 #define MQTT_URL "mqtt-tcp://127.0.0.1:1883"
 
-static nng_socket mqttsock;
+static mqtt_cli mqttcli;
 
 int subscriber (int argc, char ** argv)
 {
@@ -48,7 +48,7 @@ int subscriber (int argc, char ** argv)
   dds_delete_qos(qos);
 
   // MQTT Client create
-  mqtt_connect(&mqttsock, MQTT_URL);
+  mqtt_connect(&mqttcli, MQTT_URL);
 
   printf ("\n=== [Subscriber] Waiting for a sample ...\n");
   fflush (stdout);
@@ -77,7 +77,7 @@ int subscriber (int argc, char ** argv)
 
 	  fixed_mqtt_msg mqttmsg;
 	  HelloWorld_to_MQTT(msg, &mqttmsg);
-	  int rv = mqtt_publish(&mqttsock, "HelloWorld", 0, mqttmsg.payload, mqttmsg.len);
+	  int rv = mqtt_publish(&mqttcli, "HelloWorld", 0, mqttmsg.payload, mqttmsg.len);
 	  if (rv != 0)
 		  printf("error in mqtt publish.\n");
     }

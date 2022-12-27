@@ -1,6 +1,10 @@
 #ifndef DDS2MQTT_MQTT_CLIENT
 #define DDS2MQTT_MQTT_CLIENT
 
+#include <pthread.h>
+
+#include "vector.h"
+
 #include <nng/mqtt/mqtt_client.h>
 #include <nng/nng.h>
 

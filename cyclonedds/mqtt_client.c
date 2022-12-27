@@ -20,6 +20,9 @@
 #include <time.h>
 #include <pthread.h>
 
+#include "mqtt_client.h"
+#include "vector.h"
+
 #include <nng/mqtt/mqtt_client.h>
 #include <nng/nng.h>
 #include <nng/supplemental/util/platform.h>
@@ -143,8 +146,6 @@ mqtt_loop(void *arg)
 		// it to the handle queue.
 		// Sleep when handle queue is empty.
 	}
-
-	return 0;
 }
 
 int
@@ -171,6 +172,8 @@ mqtt_disconnect(mqtt_cli *cli)
 {
 	// TODO Send disconnect msg
 	cli->running = 0;
+
+	return 0;
 }
 
 int
