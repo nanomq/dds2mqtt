@@ -6,6 +6,15 @@
 
 typedef struct mqtt_cli mqtt_cli;
 
+struct mqtt_cli {
+	nng_socket sock;
+	int        verbose;
+	char *     url;
+	pthread_t  thr;
+	int        running;
+	nftp_vec  *handleq;
+};
+
 int mqtt_connect(mqtt_cli *cli, const char *url);
 
 int mqtt_disconnect(mqtt_cli *cli);

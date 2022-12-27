@@ -132,16 +132,7 @@ client_publish(nng_socket sock, const char *topic, uint8_t *payload,
 	return rv;
 }
 
-struct mqtt_cli {
-	nng_socket sock;
-	int        verbose;
-	char *     url;
-	pthread_t  thr;
-	int        running;
-	nftp_vec  *handleq;
-};
-
-static int
+static void
 mqtt_loop(void *arg)
 {
 	mqtt_cli *cli = arg;
