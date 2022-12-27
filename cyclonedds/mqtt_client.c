@@ -22,6 +22,7 @@
 
 #include "mqtt_client.h"
 #include "vector.h"
+#include "HelloWorldMQTTTypes.h"
 
 #include <nng/mqtt/mqtt_client.h>
 #include <nng/nng.h>
@@ -176,6 +177,7 @@ mqtt_loop(void *arg)
 	mqtt_cli *cli = arg;
 	handle *hd = NULL;
 	nng_msg *msg;
+	fixed_mqtt_msg mqttmsg;
 	int rv;
 
 	while (cli->running) {
@@ -211,10 +213,9 @@ work:
 				break;
 			case HANDLE_TO_MQTT:
 				// Translate DDS msg to MQTT format
-				fixed_mqtt_msg mqttmsg;
 				HelloWorld_to_MQTT(msg, &mqttmsg);
 
-				mqtt_publish(&mqttcli, "HelloWorld", 0, mqttmsg.payload, mqttmsg.len);
+				mqtt_publish(cli, "HelloWorld", 0, mqttmsg.payload, mqttmsg.len);
 				break;
 			default:
 				printf("Unsupported handle type.\n");
