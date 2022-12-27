@@ -211,5 +211,3 @@ nftp_vec_len(nftp_vec *v)
 {
 	return v->len;
 }
-
-#endif

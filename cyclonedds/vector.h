@@ -11,6 +11,40 @@
 #ifndef DDS2MQTT_VECTOR
 #define DDS2MQTT_VECTOR
 
+#include <stdlib.h>
+
+
+#define NFTP_SIZE         32
+#define NFTP_BLOCK_SZ     (256 * 1024) // Maximal size of single package
+#define NFTP_FILES        32 // Receive up to 32 files at once
+#define NFTP_HASH(p, n)   nftp_djb_hashn(p, n)
+#define NFTP_FNAME_LEN    64
+#define NFTP_FDIR_LEN     256
+
+enum NFTP_ERR {
+	NFTP_ERR_HASH = 0x01,
+	NFTP_ERR_FILEPATH,
+	NFTP_ERR_FILENAME,
+	NFTP_ERR_BLOCKS,
+	NFTP_ERR_ID,
+	NFTP_ERR_CONTENT,
+	NFTP_ERR_FILE,
+	NFTP_ERR_MEM,
+	NFTP_ERR_OVERFLOW,
+	NFTP_ERR_EMPTY,
+	NFTP_ERR_PROTO,
+	NFTP_ERR_DIRTY,
+	NFTP_ERR_VEC,
+	NFTP_ERR_IOVS,
+	NFTP_ERR_FLAG,
+	NFTP_ERR_STREAM,
+	NFTP_ERR_HT,
+	NFTP_ERR_TYPE,
+};
+
+#define NFTP_HEAD (-1)
+#define NFTP_TAIL (0x7FFFFFFF)
+
 typedef struct handle handle;
 struct handle {
 	int    type; // 1->send 2->recv
