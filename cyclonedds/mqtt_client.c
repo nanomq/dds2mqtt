@@ -206,8 +206,15 @@ mqtt_loop(void *arg)
 work:
 		switch (hd->type) {
 			case HANDLE_TO_DDS:
+				// Put to DDSClient's handle queue
+				// TODO
 				break;
 			case HANDLE_TO_MQTT:
+				// Translate DDS msg to MQTT format
+				fixed_mqtt_msg mqttmsg;
+				HelloWorld_to_MQTT(msg, &mqttmsg);
+
+				mqtt_publish(&mqttcli, "HelloWorld", 0, mqttmsg.payload, mqttmsg.len);
 				break;
 			default:
 				printf("Unsupported handle type.\n");
