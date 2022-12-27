@@ -8,6 +8,16 @@
 #include <nng/mqtt/mqtt_client.h>
 #include <nng/nng.h>
 
+#define HANDLE_TO_DDS 1
+#define HANDLE_TO_MQTT 2
+
+typedef struct handle handle;
+struct handle {
+	int    type; // 1->To dds network 2->To mqtt network
+	void * data;
+	int    len;
+};
+
 typedef struct mqtt_cli mqtt_cli;
 
 struct mqtt_cli {
@@ -17,7 +27,6 @@ struct mqtt_cli {
 	pthread_t  thr;
 	int        running;
 	nftp_vec  *handleq;
-	nftp_vec  *rmsgq;
 
 	pthread_mutex_t mtx;
 };

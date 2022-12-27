@@ -27,6 +27,18 @@
 #include <nng/nng.h>
 #include <nng/supplemental/util/platform.h>
 
+handle *
+mk_handle(int type, void *data, int len) {
+	handle *hd = malloc(sizeof(handle));
+	if (hd == NULL)
+		return NULL;
+	hd->data = data;
+	hd->type = type;
+	hd->len  = len;
+
+	return hd;
+}
+
 void
 fatal(const char *msg, int rv)
 {
@@ -168,7 +180,7 @@ mqtt_loop(void *arg)
 
 	while (cli->running) {
 		// If handle queue is not empty. Handle it first.
-		// Or we need to receive msgs from nng in a NON BLOCK way and put
+		// Or we need to receive msgs from nng in a NONBLOCK way and put
 		// it to the handle queue.
 		// Sleep when handle queue is empty.
 		if (nftp_vec_len(cli->handleq)) {
@@ -181,7 +193,10 @@ mqtt_loop(void *arg)
 			continue;
 		}
 		else if (rv == 0) {
-			nftp_vec_append(cli->rmsgq, (void *)msg);
+			// Received msg and put to handleq
+			hd = mk_handle(HANDLE_TO_DDS, msg, 0);
+			nftp_vec_append(cli->handleq, (void*)hd);
+			hd = NULL;
 			continue;
 		}
 		// else No msgs available
@@ -213,7 +228,6 @@ mqtt_connect(mqtt_cli *cli, const char *url)
 	cli->running = 1;
 
 	nftp_vec_alloc(&cli->handleq);
-	nftp_vec_alloc(&cli->rmsgq);
 
 	// Create a thread to send / recv mqtt msg
 	pthread_create(&cli->thr, NULL, mqtt_loop, (void *)cli);
@@ -283,11 +297,6 @@ mqtt_publish(mqtt_cli *cli, const char *topic, uint8_t qos, uint8_t *data, int l
 int
 mqtt_recvmsg(mqtt_cli *cli, nng_msg **msgp)
 {
-	if (nftp_vec_len(cli->rmsgq) > 0) {
-		nftp_vec_pop(cli->rmsgq, msgp, NFTP_HEAD);
-		return 0;
-	}
-	*msgp = NULL;
 	return 0;
 }
 
