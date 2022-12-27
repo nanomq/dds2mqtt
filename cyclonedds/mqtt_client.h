@@ -17,6 +17,9 @@ struct mqtt_cli {
 	pthread_t  thr;
 	int        running;
 	nftp_vec  *handleq;
+	nftp_vec  *rmsgq;
+
+	pthread_mutex_t mtx;
 };
 
 int mqtt_connect(mqtt_cli *cli, const char *url);

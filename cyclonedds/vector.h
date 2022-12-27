@@ -45,9 +45,12 @@ enum NFTP_ERR {
 #define NFTP_HEAD (-1)
 #define NFTP_TAIL (0x7FFFFFFF)
 
+#define HANDLE_TO_DDS 1
+#define HANDLE_TO_MQTT 2
+
 typedef struct handle handle;
 struct handle {
-	int    type; // 1->send 2->recv
+	int    type; // 1->To dds network 2->To mqtt network
 	void * data;
 	int    len;
 };

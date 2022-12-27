@@ -162,12 +162,42 @@ static void
 mqtt_loop(void *arg)
 {
 	mqtt_cli *cli = arg;
+	handle *hd = NULL;
+	nng_msg *msg;
+	int rv;
 
 	while (cli->running) {
 		// If handle queue is not empty. Handle it first.
 		// Or we need to receive msgs from nng in a NON BLOCK way and put
 		// it to the handle queue.
 		// Sleep when handle queue is empty.
+		if (nftp_vec_len(cli->handleq)) {
+			nftp_vec_pop(cli->handleq, (void **)&hd, NFTP_HEAD);
+			goto work;
+		}
+		rv = client_recv(cli, &msg);
+		if (rv < 0) {
+			printf("Errror in recv msg\n");
+			continue;
+		}
+		else if (rv == 0) {
+			nftp_vec_append(cli->rmsgq, (void *)msg);
+			continue;
+		}
+		// else No msgs available
+
+		// Sleep and continue
+		continue;
+work:
+		switch (hd->type) {
+			case HANDLE_TO_DDS:
+				break;
+			case HANDLE_TO_MQTT:
+				break;
+			default:
+				printf("Unsupported handle type.\n");
+				break;
+		}
 	}
 }
 
@@ -183,6 +213,7 @@ mqtt_connect(mqtt_cli *cli, const char *url)
 	cli->running = 1;
 
 	nftp_vec_alloc(&cli->handleq);
+	nftp_vec_alloc(&cli->rmsgq);
 
 	// Create a thread to send / recv mqtt msg
 	pthread_create(&cli->thr, NULL, mqtt_loop, (void *)cli);
@@ -252,20 +283,11 @@ mqtt_publish(mqtt_cli *cli, const char *topic, uint8_t qos, uint8_t *data, int l
 int
 mqtt_recvmsg(mqtt_cli *cli, nng_msg **msgp)
 {
-	int rv;
-	nng_msg *msg;
-	if ((rv = nng_recvmsg(cli->sock, &msg, 0)) != 0) {
-		printf("Error in nng_recvmsg %d.\n", rv);
-		return -2;
+	if (nftp_vec_len(cli->rmsgq) > 0) {
+		nftp_vec_pop(cli->rmsgq, msgp, NFTP_HEAD);
+		return 0;
 	}
-
-	// we should only receive publish messages
-	if (nng_mqtt_msg_get_packet_type(msg) != NNG_MQTT_PUBLISH) {
-		printf("Invalid MQTT Msg type.\n");
-		return -3;
-	}
-
-	*msgp = msg;
+	*msgp = NULL;
 	return 0;
 }
 
