@@ -1,6 +1,7 @@
 #include "dds/dds.h"
 #include "HelloWorld.h"
 #include "subpub.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -15,16 +16,18 @@
 
 static mqtt_cli mqttcli;
 
-int subscriber (int argc, char ** argv)
+int dds_client (int argc, char ** argv)
 {
   dds_entity_t participant;
   dds_entity_t topic;
   dds_entity_t reader;
+  dds_entity_t writer;
   HelloWorld  *msg;
   void *samples[MAX_SAMPLES];
   dds_sample_info_t infos[MAX_SAMPLES];
   dds_return_t rc;
   dds_qos_t *qos;
+  uint32_t status = 0;
   (void)argc;
   (void)argv;
 
@@ -47,8 +50,30 @@ int subscriber (int argc, char ** argv)
     DDS_FATAL("dds_create_reader: %s\n", dds_strretcode(-reader));
   dds_delete_qos(qos);
 
+  /* Create a Writer */
+  writer = dds_create_writer (participant, topic, NULL, NULL);
+  if (writer < 0)
+    DDS_FATAL("dds_create_writer: %s\n", dds_strretcode(-writer));
+
+  printf("=== [Publisher]  Waiting for a reader to be discovered ...\n");
+  fflush (stdout);
+
+  rc = dds_set_status_mask(writer, DDS_PUBLICATION_MATCHED_STATUS);
+  if (rc != DDS_RETCODE_OK)
+    DDS_FATAL("dds_set_status_mask: %s\n", dds_strretcode(-rc));
+
+  while(!(status & DDS_PUBLICATION_MATCHED_STATUS))
+  {
+    rc = dds_get_status_changes (writer, &status);
+    if (rc != DDS_RETCODE_OK)
+      DDS_FATAL("dds_get_status_changes: %s\n", dds_strretcode(-rc));
+
+    /* Polling sleep. */
+    dds_sleepfor (DDS_MSECS (20));
+  }
+
   // MQTT Client create
-  mqtt_connect(&mqttcli, MQTT_URL);
+  // mqtt_connect(&mqttcli, MQTT_URL);
 
   printf ("\n=== [Subscriber] Waiting for a sample ...\n");
   fflush (stdout);
@@ -75,11 +100,10 @@ int subscriber (int argc, char ** argv)
       printf ("Message (%"PRId32", %s)\n", msg->index, msg->message);
       fflush (stdout);
 
-	  fixed_mqtt_msg mqttmsg;
-	  HelloWorld_to_MQTT(msg, &mqttmsg);
-	  int rv = mqtt_publish(&mqttcli, "HelloWorld", 0, mqttmsg.payload, mqttmsg.len);
-	  if (rv != 0)
-		  printf("error in mqtt publish.\n");
+      dds_sleepfor (DDS_MSECS (500));
+      /* Send the msg received */
+      rc = dds_write(writer, msg);
+      if (rc != DDS_RETCODE_OK) DDS_FATAL("dds_write: %s\n", dds_strretcode(-rc));
     }
     else
     {
