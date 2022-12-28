@@ -48,7 +48,7 @@ int subscriber (int argc, char ** argv)
   dds_delete_qos(qos);
 
   // MQTT Client create
-  mqtt_connect(&mqttcli, MQTT_URL);
+  // mqtt_connect(&mqttcli, MQTT_URL);
 
   printf ("\n=== [Subscriber] Waiting for a sample ...\n");
   fflush (stdout);
@@ -75,11 +75,13 @@ int subscriber (int argc, char ** argv)
       printf ("Message (%"PRId32", %s)\n", msg->index, msg->message);
       fflush (stdout);
 
+	  /*
 	  fixed_mqtt_msg mqttmsg;
 	  HelloWorld_to_MQTT(msg, &mqttmsg);
 	  int rv = mqtt_publish(&mqttcli, "HelloWorld", 0, mqttmsg.payload, mqttmsg.len);
 	  if (rv != 0)
 		  printf("error in mqtt publish.\n");
+      */
     }
     else
     {

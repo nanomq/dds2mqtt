@@ -57,6 +57,7 @@ int publisher (int argc, char ** argv)
     dds_sleepfor (DDS_MSECS (20));
   }
 
+  /*
   nng_msg* rmsg;
   mqtt_cli cli;
   uint32_t len;
@@ -65,8 +66,10 @@ int publisher (int argc, char ** argv)
 
   mqtt_connect(&cli, url);
   mqtt_subscribe(&cli, mqtttopic, 0);
+  */
 
   while (1) {
+    /*
     if (0 != mqtt_recvmsg(&cli, &rmsg)) {
       printf("Error in recv.\n");
     }
@@ -85,6 +88,7 @@ int publisher (int argc, char ** argv)
     mqttmsg.len = len;
 
     MQTT_to_HelloWorld(&mqttmsg, &msg);
+    */
 
     /* Create a message to write. */
     msg.index = 1;
@@ -95,6 +99,7 @@ int publisher (int argc, char ** argv)
 
     rc = dds_write(writer, &msg);
     if (rc != DDS_RETCODE_OK) DDS_FATAL("dds_write: %s\n", dds_strretcode(-rc));
+	break;
   }
 
   /* Deleting the participant will delete all its children recursively as well. */
