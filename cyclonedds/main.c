@@ -1,21 +1,26 @@
 #include <stdio.h>
 #include <string.h>
+
 #include "subpub.h"
 
-const char *usage = "dds2mqtt {sub|subscriber|pub|publisher}";
+const char *usage = "dds2mqtt {sub|pub|proxy}";
 
 int
 main(int argc, char ** argv) {
 	if (argc < 2)
 		goto helper;
 
-	if ((strcmp(argv[1], "sub") == 0) || (strcmp(argv[1], "subscriber") == 0))
+	if (strcmp(argv[1], "sub") == 0)
 	{
 		subscriber(argc, argv);
 	}
-	else if ((strcmp(argv[1], "pub") == 0) || (strcmp(argv[1], "publisher") == 0))
+	else if (strcmp(argv[1], "pub") == 0)
 	{
 		publisher(argc, argv);
+	}
+	else if (strcmp(argv[1], "proxy") == 0)
+	{
+		dds_client(argc, argv);
 	}
 
 	return 0;

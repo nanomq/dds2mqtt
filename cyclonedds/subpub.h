@@ -3,5 +3,6 @@
 
 int publisher (int argc, char ** argv);
 int subscriber (int argc, char ** argv);
+int dds_client (int argc, char ** argv);
 
 #endif
