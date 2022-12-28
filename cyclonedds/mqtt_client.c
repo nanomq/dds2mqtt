@@ -204,22 +204,23 @@ mqtt_loop(void *arg)
 		// else No msgs available
 
 		// Sleep and continue
+		nng_msleep(500);
 		continue;
 work:
 		switch (hd->type) {
-			case HANDLE_TO_DDS:
-				// Put to DDSClient's handle queue
-				// TODO
-				break;
-			case HANDLE_TO_MQTT:
-				// Translate DDS msg to MQTT format
-				HelloWorld_to_MQTT(msg, &mqttmsg);
+		case HANDLE_TO_DDS:
+			// Put to DDSClient's handle queue
+			// TODO
+			break;
+		case HANDLE_TO_MQTT:
+			// Translate DDS msg to MQTT format
+			HelloWorld_to_MQTT(msg, &mqttmsg);
 
-				mqtt_publish(cli, "HelloWorld", 0, mqttmsg.payload, mqttmsg.len);
-				break;
-			default:
-				printf("Unsupported handle type.\n");
-				break;
+			mqtt_publish(cli, "HelloWorld", 0, mqttmsg.payload, mqttmsg.len);
+			break;
+		default:
+			printf("Unsupported handle type.\n");
+			break;
 		}
 	}
 }

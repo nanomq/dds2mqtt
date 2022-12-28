@@ -18,6 +18,8 @@ struct handle {
 	int    len;
 };
 
+handle *mk_handle(int type, void *data, int len);
+
 typedef struct mqtt_cli mqtt_cli;
 
 struct mqtt_cli {
