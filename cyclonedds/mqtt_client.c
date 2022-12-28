@@ -12,24 +12,25 @@
 //
 
 #include <assert.h>
+#include <pthread.h>
+#include <signal.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <signal.h>
 #include <time.h>
-#include <pthread.h>
 
+#include "HelloWorldMQTTTypes.h"
 #include "mqtt_client.h"
 #include "vector.h"
-#include "HelloWorldMQTTTypes.h"
 
 #include <nng/mqtt/mqtt_client.h>
 #include <nng/nng.h>
 #include <nng/supplemental/util/platform.h>
 
 handle *
-mk_handle(int type, void *data, int len) {
+mk_handle(int type, void *data, int len)
+{
 	handle *hd = malloc(sizeof(handle));
 	if (hd == NULL)
 		return NULL;
@@ -75,7 +76,7 @@ int
 client_connect(
     nng_socket *sock, nng_dialer *dialer, const char *url, bool verbose)
 {
-	int        rv;
+	int rv;
 
 	if ((rv = nng_mqtt_client_open(sock)) != 0) {
 		fatal("nng_socket", rv);
@@ -154,7 +155,7 @@ client_publish(nng_socket sock, const char *topic, uint8_t *payload,
 int
 client_recv(mqtt_cli *cli, nng_msg **msgp)
 {
-	int rv;
+	int      rv;
 	nng_msg *msg;
 	if ((rv = nng_recvmsg(cli->sock, &msg, 0)) != 0) {
 		printf("Error in nng_recvmsg %d.\n", rv);
@@ -174,30 +175,29 @@ client_recv(mqtt_cli *cli, nng_msg **msgp)
 static void
 mqtt_loop(void *arg)
 {
-	mqtt_cli *cli = arg;
-	handle *hd = NULL;
-	nng_msg *msg;
+	mqtt_cli      *cli = arg;
+	handle        *hd  = NULL;
+	nng_msg       *msg;
 	fixed_mqtt_msg mqttmsg;
-	int rv;
+	int            rv;
 
 	while (cli->running) {
 		// If handle queue is not empty. Handle it first.
-		// Or we need to receive msgs from nng in a NONBLOCK way and put
-		// it to the handle queue.
-		// Sleep when handle queue is empty.
+		// Or we need to receive msgs from nng in a NONBLOCK way and
+		// put it to the handle queue. Sleep when handle queue is
+		// empty.
 		if (nftp_vec_len(cli->handleq)) {
-			nftp_vec_pop(cli->handleq, (void **)&hd, NFTP_HEAD);
+			nftp_vec_pop(cli->handleq, (void **) &hd, NFTP_HEAD);
 			goto work;
 		}
 		rv = client_recv(cli, &msg);
 		if (rv < 0) {
 			printf("Errror in recv msg\n");
 			continue;
-		}
-		else if (rv == 0) {
+		} else if (rv == 0) {
 			// Received msg and put to handleq
 			hd = mk_handle(HANDLE_TO_DDS, msg, 0);
-			nftp_vec_append(cli->handleq, (void*)hd);
+			nftp_vec_append(cli->handleq, (void *) hd);
 			hd = NULL;
 			continue;
 		}
@@ -206,7 +206,7 @@ mqtt_loop(void *arg)
 		// Sleep and continue
 		nng_msleep(500);
 		continue;
-work:
+	work:
 		switch (hd->type) {
 		case HANDLE_TO_DDS:
 			// Put to DDSClient's handle queue
@@ -216,7 +216,8 @@ work:
 			// Translate DDS msg to MQTT format
 			HelloWorld_to_MQTT(msg, &mqttmsg);
 
-			mqtt_publish(cli, "HelloWorld", 0, mqttmsg.payload, mqttmsg.len);
+			mqtt_publish(cli, "HelloWorld", 0, mqttmsg.payload,
+			    mqttmsg.len);
 			break;
 		default:
 			printf("Unsupported handle type.\n");
@@ -228,8 +229,8 @@ work:
 int
 mqtt_connect(mqtt_cli *cli, const char *url)
 {
-	bool        verbose = 1;
-	nng_dialer  dialer;
+	bool       verbose = 1;
+	nng_dialer dialer;
 
 	client_connect(&cli->sock, &dialer, url, verbose);
 
@@ -239,7 +240,7 @@ mqtt_connect(mqtt_cli *cli, const char *url)
 	nftp_vec_alloc(&cli->handleq);
 
 	// Create a thread to send / recv mqtt msg
-	pthread_create(&cli->thr, NULL, mqtt_loop, (void *)cli);
+	pthread_create(&cli->thr, NULL, mqtt_loop, (void *) cli);
 
 	return 0;
 }
@@ -270,8 +271,8 @@ mqtt_subscribe(mqtt_cli *cli, const char *topic, const uint8_t qos)
 	return nng_mqtt_subscribe(&cli->sock, subscriptions, 1, NULL);
 	/*
 	nng_mqtt_cb_opt cb_opt = {
-		.sub_ack_cb = sub_callback,
-		.unsub_ack_cb = unsub_callback,
+	        .sub_ack_cb = sub_callback,
+	        .unsub_ack_cb = unsub_callback,
 	};
 
 	// Asynchronous subscription
@@ -298,7 +299,8 @@ mqtt_unsubscribe(mqtt_cli *cli, const char *topic)
 }
 
 int
-mqtt_publish(mqtt_cli *cli, const char *topic, uint8_t qos, uint8_t *data, int len)
+mqtt_publish(
+    mqtt_cli *cli, const char *topic, uint8_t qos, uint8_t *data, int len)
 {
 	return client_publish(cli->sock, topic, data, len, qos, 1);
 }
@@ -312,27 +314,27 @@ mqtt_recvmsg(mqtt_cli *cli, nng_msg **msgp)
 /*
 static void
 sub_callback(void *arg) {
-	nng_mqtt_client *client = (nng_mqtt_client *) arg;
-	nng_aio *aio = client->sub_aio;
-	nng_msg *msg = nng_aio_get_msg(aio);
-	uint32_t count;
-	reason_code *code;
-	code = (reason_code *)nng_mqtt_msg_get_suback_return_codes(msg, &count);
-	printf("aio mqtt result %d \n", nng_aio_result(aio));
-	// printf("suback %d \n", *code);
-	nng_msg_free(msg);
+        nng_mqtt_client *client = (nng_mqtt_client *) arg;
+        nng_aio *aio = client->sub_aio;
+        nng_msg *msg = nng_aio_get_msg(aio);
+        uint32_t count;
+        reason_code *code;
+        code = (reason_code *)nng_mqtt_msg_get_suback_return_codes(msg,
+&count); printf("aio mqtt result %d \n", nng_aio_result(aio));
+        // printf("suback %d \n", *code);
+        nng_msg_free(msg);
 }
 
 static void
 unsub_callback(void *arg) {
-	nng_mqtt_client *client = (nng_mqtt_client *) arg;
-	nng_aio *aio = client->unsub_aio;
-	nng_msg *msg = nng_aio_get_msg(aio);
-	uint32_t count;
-	reason_code *code;
-	// code = (reason_code *)nng_mqtt_msg_get_suback_return_codes(msg, &count);
-	printf("aio mqtt result %d \n", nng_aio_result(aio));
-	// printf("suback %d \n", *code);
-	nng_msg_free(msg);
+        nng_mqtt_client *client = (nng_mqtt_client *) arg;
+        nng_aio *aio = client->unsub_aio;
+        nng_msg *msg = nng_aio_get_msg(aio);
+        uint32_t count;
+        reason_code *code;
+        // code = (reason_code *)nng_mqtt_msg_get_suback_return_codes(msg,
+&count); printf("aio mqtt result %d \n", nng_aio_result(aio));
+        // printf("suback %d \n", *code);
+        nng_msg_free(msg);
 }
 */
