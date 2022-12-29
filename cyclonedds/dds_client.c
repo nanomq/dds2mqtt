@@ -26,6 +26,7 @@ dds_proxy(int argc, char **argv)
 	dds_client_init(&ddscli);
 
 	mqtt_connect(&mqttcli, MQTT_URL, &ddscli);
+	mqtt_subscribe(&mqttcli, "HelloWorld", 0);
 
 	dds_client(&ddscli, &mqttcli);
 
@@ -111,6 +112,9 @@ dds_client(dds_cli *cli, mqtt_cli *mqttcli)
 	/* Initialize sample buffer, by pointing the void pointer within
 	 * the buffer array to a valid sample memory location. */
 	samples[0] = HelloWorld__alloc();
+	nng_msg *mqttmsg;
+	fixed_mqtt_msg midmsg;
+	int len;
 
 	/* Poll until data has been read. */
 	while (true) {
@@ -133,7 +137,7 @@ dds_client(dds_cli *cli, mqtt_cli *mqttcli)
 		/* Check if we read some data and it is valid. */
 		if ((rc > 0) && (infos[0].valid_data)) {
 			/* Print Message. */
-			msg = (HelloWorld *) samples[0];
+			msg = samples[0];
 			printf("=== [Subscriber] Received : ");
 			printf("Message (%"PRId32", %s)\n", msg->index,
 			    msg->message);
@@ -153,6 +157,11 @@ dds_client(dds_cli *cli, mqtt_cli *mqttcli)
 work:
 		switch (hd->type) {
 		case HANDLE_TO_DDS:
+			mqttmsg = hd->data;
+			midmsg.payload = nng_mqtt_msg_get_publish_payload(mqttmsg, &len);
+			midmsg.len = len;
+			msg = (HelloWorld *) samples[0];
+			MQTT_to_HelloWorld(&midmsg, msg);
 			/* Send the msg received */
 			rc = dds_write(writer, msg);
 			if (rc != DDS_RETCODE_OK)
