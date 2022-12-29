@@ -157,6 +157,7 @@ work:
 			rc = dds_write(writer, msg);
 			if (rc != DDS_RETCODE_OK)
 				DDS_FATAL("dds_write: %s\n", dds_strretcode(-rc));
+			printf("[DDS] Send a msg to dds.\n");
 			free(hd);
 			hd = NULL;
 			break;
@@ -164,7 +165,7 @@ work:
 			// Put to MQTTClient's handle queue
 			nftp_vec_append(mqttcli->handleq, hd);
 			hd = NULL;
-			printf("Send a msg to mqtt.\n");
+			printf("[DDS] Send a msg to mqtt.\n");
 			break;
 		default:
 			printf("Unsupported handle type.\n");

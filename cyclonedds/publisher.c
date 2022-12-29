@@ -92,6 +92,7 @@ int publisher (int argc, char ** argv)
 
     /* Create a message to write. */
     msg.index = 1;
+	msg.message = "aaaaaaa";
 
     printf("=== [Publisher]  Writing : ");
     printf("Message (%" PRId32 ", %s)\n", msg.index, msg.message);

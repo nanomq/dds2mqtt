@@ -150,15 +150,28 @@ client_publish(nng_socket sock, const char *topic, uint8_t *payload,
 	return rv;
 }
 
+static pthread_t recvthr;
+static nftp_vec *rmsgq;
+
 // TODO
 // It works in a NONBLOCK way
 // Return 0 when got msg. return 1 when no msg; else errors happened
 int
 client_recv(mqtt_cli *cli, nng_msg **msgp)
 {
+	if (nftp_vec_len(rmsgq) == 0) {
+		return 1;
+	}
+	nftp_vec_pop(rmsgq, (void **)msgp, NFTP_HEAD);
+	return 0;
+}
+
+int
+client_recv2(mqtt_cli *cli, nng_msg **msgp)
+{
 	int      rv;
 	nng_msg *msg;
-	if ((rv = nng_recvmsg(cli->sock, &msg, 0)) != 0) {
+	if ((rv = nng_recvmsg(cli->sock, &msg, NNG_FLAG_NONBLOCK)) != 0) {
 		printf("Error in nng_recvmsg %d.\n", rv);
 		return -2;
 	}
@@ -174,11 +187,24 @@ client_recv(mqtt_cli *cli, nng_msg **msgp)
 }
 
 static void
+mqtt_recv_loop(void *arg)
+{
+	mqtt_cli      *cli = arg;
+	nng_msg       *msg;
+	while (cli->running) {
+		msg = NULL;
+		client_recv2(cli, &msg);
+		nftp_vec_append(rmsgq, msg);
+	}
+}
+
+static void
 mqtt_loop(void *arg)
 {
 	mqtt_cli      *cli = arg;
 	handle        *hd  = NULL;
 	nng_msg       *msg;
+	void          *ddsmsg;
 	fixed_mqtt_msg mqttmsg;
 	int            rv;
 	dds_cli       *ddscli = cli->ddscli;
@@ -188,6 +214,7 @@ mqtt_loop(void *arg)
 		// Or we need to receive msgs from nng in a NONBLOCK way and
 		// put it to the handle queue. Sleep when handle queue is
 		// empty.
+		printf("here\n");
 		if (nftp_vec_len(cli->handleq)) {
 			nftp_vec_pop(cli->handleq, (void **) &hd, NFTP_HEAD);
 			goto work;
@@ -214,11 +241,14 @@ mqtt_loop(void *arg)
 			// Put to DDSClient's handle queue
 			// TODO Lock is needed
 			nftp_vec_append(ddscli->handleq, (void *) hd);
+			printf("[MQTT] send msg to dds.\n");
 			hd = NULL;
 			break;
 		case HANDLE_TO_MQTT:
 			// Translate DDS msg to MQTT format
-			HelloWorld_to_MQTT(msg, &mqttmsg);
+			ddsmsg = hd->data;
+			HelloWorld_to_MQTT(ddsmsg, &mqttmsg);
+			printf("[MQTT] send msg to mqtt.\n");
 
 			mqtt_publish(cli, "HelloWorld", 0, mqttmsg.payload,
 			    mqttmsg.len);
@@ -247,6 +277,10 @@ mqtt_connect(mqtt_cli *cli, const char *url, void *dc)
 
 	// Create a thread to send / recv mqtt msg
 	pthread_create(&cli->thr, NULL, mqtt_loop, (void *) cli);
+
+	// XXX Create a temparary thread to recv mqtt msg
+	nftp_vec_alloc(&rmsgq);
+	pthread_create(&recvthr, NULL, mqtt_recv_loop, (void *) cli);
 
 	return 0;
 }
