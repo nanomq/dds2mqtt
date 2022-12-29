@@ -15,11 +15,33 @@
 
 #define MQTT_URL "mqtt-tcp://127.0.0.1:1883"
 
-static mqtt_cli  mqttcli;
-static nftp_vec *handleq;
+static int dds_client_init(dds_cli *cli);
 
 int
-dds_client(int argc, char **argv)
+dds_proxy(int argc, char **argv)
+{
+	mqtt_cli mqttcli;
+	dds_cli  ddscli;
+
+	dds_client_init(&ddscli);
+
+	mqtt_connect(&mqttcli, MQTT_URL, &ddscli);
+
+	dds_client(&ddscli, &mqttcli);
+
+	return 0;
+}
+
+static int
+dds_client_init(dds_cli *cli)
+{
+	nftp_vec_alloc(&cli->handleq);
+
+	return 0;
+}
+
+int
+dds_client(dds_cli *cli, mqtt_cli *mqttcli)
 {
 	dds_entity_t      participant;
 	dds_entity_t      topic;
@@ -32,11 +54,9 @@ dds_client(int argc, char **argv)
 	dds_qos_t        *qos;
 	uint32_t          status = 0;
 	handle           *hd;
-	(void) argc;
-	(void) argv;
 
 	/* Create handle queue */
-	nftp_vec_alloc(&handleq);
+	nftp_vec *handleq = cli->handleq;
 
 	/* Create a Participant. */
 	participant = dds_create_participant(DDS_DOMAIN_DEFAULT, NULL, NULL);
@@ -137,11 +157,14 @@ work:
 			rc = dds_write(writer, msg);
 			if (rc != DDS_RETCODE_OK)
 				DDS_FATAL("dds_write: %s\n", dds_strretcode(-rc));
+			free(hd);
+			hd = NULL;
 			break;
 		case HANDLE_TO_MQTT:
 			// Put to MQTTClient's handle queue
-			// TODO
-			printf("TODO send a msg to mqtt.\n");
+			nftp_vec_append(mqttcli->handleq, hd);
+			hd = NULL;
+			printf("Send a msg to mqtt.\n");
 			break;
 		default:
 			printf("Unsupported handle type.\n");
