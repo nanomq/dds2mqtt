@@ -26,7 +26,7 @@ dds_proxy(int argc, char **argv)
 	dds_client_init(&ddscli);
 
 	mqtt_connect(&mqttcli, MQTT_URL, &ddscli);
-	mqtt_subscribe(&mqttcli, "HelloWorld", 0);
+	mqtt_subscribe(&mqttcli, "DDSCMD/HelloWorld", 0);
 
 	dds_client(&ddscli, &mqttcli);
 
@@ -45,7 +45,8 @@ int
 dds_client(dds_cli *cli, mqtt_cli *mqttcli)
 {
 	dds_entity_t      participant;
-	dds_entity_t      topic;
+	dds_entity_t      topicw;
+	dds_entity_t      topicr;
 	dds_entity_t      reader;
 	dds_entity_t      writer;
 	HelloWorld       *msg;
@@ -66,15 +67,21 @@ dds_client(dds_cli *cli, mqtt_cli *mqttcli)
 		    dds_strretcode(-participant));
 
 	/* Create a Topic. */
-	topic = dds_create_topic(
-	    participant, &HelloWorld_desc, "HelloWorld", NULL, NULL);
-	if (topic < 0)
-		DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topic));
+	topicr = dds_create_topic(
+	    participant, &HelloWorld_desc, "MQTTCMD/HelloWorld", NULL, NULL);
+	if (topicr < 0)
+		DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topicr));
+
+	/* Create a Topic. for writer */
+	topicw = dds_create_topic(
+	    participant, &HelloWorld_desc, "MQTT/HelloWorld", NULL, NULL);
+	if (topicw < 0)
+		DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topicw));
 
 	/* Create a reliable Reader. */
 	qos = dds_create_qos();
 	dds_qset_reliability(qos, DDS_RELIABILITY_RELIABLE, DDS_SECS(10));
-	reader = dds_create_reader(participant, topic, qos, NULL);
+	reader = dds_create_reader(participant, topicr, qos, NULL);
 	if (reader < 0)
 		DDS_FATAL("dds_create_reader: %s\n", dds_strretcode(-reader));
 	dds_delete_qos(qos);
@@ -82,7 +89,7 @@ dds_client(dds_cli *cli, mqtt_cli *mqttcli)
 	// TODO Topics for writer and reader **MUST** be different.
 	// Or Circle messages happened
 	/* Create a Writer */
-	writer = dds_create_writer(participant, topic, NULL, NULL);
+	writer = dds_create_writer(participant, topicw, NULL, NULL);
 	if (writer < 0)
 		DDS_FATAL("dds_create_writer: %s\n", dds_strretcode(-writer));
 
@@ -93,15 +100,19 @@ dds_client(dds_cli *cli, mqtt_cli *mqttcli)
 	if (rc != DDS_RETCODE_OK)
 		DDS_FATAL("dds_set_status_mask: %s\n", dds_strretcode(-rc));
 
+	/*
 	while (!(status & DDS_PUBLICATION_MATCHED_STATUS)) {
 		rc = dds_get_status_changes(writer, &status);
 		if (rc != DDS_RETCODE_OK)
 			DDS_FATAL("dds_get_status_changes: %s\n",
 			    dds_strretcode(-rc));
+	*/
 
 		/* Polling sleep. */
+	/*
 		dds_sleepfor(DDS_MSECS(20));
 	}
+	*/
 
 	// MQTT Client create
 	// mqtt_connect(&mqttcli, MQTT_URL);

@@ -250,7 +250,7 @@ mqtt_loop(void *arg)
 			HelloWorld_to_MQTT(ddsmsg, &mqttmsg);
 			printf("[MQTT] send msg to mqtt.\n");
 
-			mqtt_publish(cli, "HelloWorld", 0, mqttmsg.payload,
+			mqtt_publish(cli, "DDS/HelloWorld", 0, mqttmsg.payload,
 			    mqttmsg.len);
 			break;
 		default:

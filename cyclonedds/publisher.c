@@ -31,7 +31,7 @@ int publisher (int argc, char ** argv)
 
   /* Create a Topic. */
   topic = dds_create_topic (
-    participant, &HelloWorld_desc, "HelloWorld", NULL, NULL);
+    participant, &HelloWorld_desc, "MQTTCMD/HelloWorld", NULL, NULL);
   if (topic < 0)
     DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topic));
 
