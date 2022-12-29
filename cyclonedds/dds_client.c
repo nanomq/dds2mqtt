@@ -100,7 +100,7 @@ dds_client(int argc, char **argv)
 		// empty.
 
 		if (nftp_vec_len(handleq)) {
-			nftp_vec_pop(handleq, (void **) hd, NFTP_HEAD);
+			nftp_vec_pop(handleq, (void **) &hd, NFTP_HEAD);
 			goto work;
 		}
 
@@ -115,18 +115,19 @@ dds_client(int argc, char **argv)
 			/* Print Message. */
 			msg = (HelloWorld *) samples[0];
 			printf("=== [Subscriber] Received : ");
-			printf("Message (%" PRId32 ", %s)\n", msg->index,
+			printf("Message (%"PRId32", %s)\n", msg->index,
 			    msg->message);
 			fflush(stdout);
 
 			/* Put msg to handleq */
-			hd = mk_handle(HANDLE_TO_DDS, msg, 0);
-			nftp_vec_append(cli->handleq, (void *) hd);
+			hd = mk_handle(HANDLE_TO_MQTT, msg, 0);
+			nftp_vec_append(handleq, (void *) hd);
 			hd = NULL;
 			continue;
 		} else {
 			/* Polling sleep. */
 			dds_sleepfor(DDS_MSECS(20));
+			continue;
 		}
 
 work:
@@ -135,12 +136,12 @@ work:
 			/* Send the msg received */
 			rc = dds_write(writer, msg);
 			if (rc != DDS_RETCODE_OK)
-				DDS_FATAL(
-				    "dds_write: %s\n", dds_strretcode(-rc));
+				DDS_FATAL("dds_write: %s\n", dds_strretcode(-rc));
 			break;
 		case HANDLE_TO_MQTT:
 			// Put to MQTTClient's handle queue
 			// TODO
+			printf("TODO send a msg to mqtt.\n");
 			break;
 		default:
 			printf("Unsupported handle type.\n");
