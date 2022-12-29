@@ -31,9 +31,12 @@ struct mqtt_cli {
 	nftp_vec  *handleq;
 
 	pthread_mutex_t mtx;
+
+	// dds client
+	void *ddscli;
 };
 
-int mqtt_connect(mqtt_cli *cli, const char *url);
+int mqtt_connect(mqtt_cli *cli, const char *url, void *ddscli);
 
 int mqtt_disconnect(mqtt_cli *cli);
 

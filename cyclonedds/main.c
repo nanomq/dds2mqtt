@@ -20,7 +20,7 @@ main(int argc, char ** argv) {
 	}
 	else if (strcmp(argv[1], "proxy") == 0)
 	{
-		dds_client(argc, argv);
+		dds_proxy(argc, argv);
 	}
 
 	return 0;

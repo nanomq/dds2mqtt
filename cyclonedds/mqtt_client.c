@@ -23,6 +23,7 @@
 #include "HelloWorldMQTTTypes.h"
 #include "mqtt_client.h"
 #include "vector.h"
+#include "subpub.h"
 
 #include <nng/mqtt/mqtt_client.h>
 #include <nng/nng.h>
@@ -180,6 +181,7 @@ mqtt_loop(void *arg)
 	nng_msg       *msg;
 	fixed_mqtt_msg mqttmsg;
 	int            rv;
+	dds_cli       *ddscli = cli->ddscli;
 
 	while (cli->running) {
 		// If handle queue is not empty. Handle it first.
@@ -210,7 +212,9 @@ mqtt_loop(void *arg)
 		switch (hd->type) {
 		case HANDLE_TO_DDS:
 			// Put to DDSClient's handle queue
-			// TODO
+			// TODO Lock is needed
+			nftp_vec_append(ddscli->handleq, (void *) hd);
+			hd = NULL;
 			break;
 		case HANDLE_TO_MQTT:
 			// Translate DDS msg to MQTT format
@@ -227,10 +231,11 @@ mqtt_loop(void *arg)
 }
 
 int
-mqtt_connect(mqtt_cli *cli, const char *url)
+mqtt_connect(mqtt_cli *cli, const char *url, void *dc)
 {
 	bool       verbose = 1;
 	nng_dialer dialer;
+	dds_cli *  ddscli = dc;
 
 	client_connect(&cli->sock, &dialer, url, verbose);
 
@@ -238,6 +243,7 @@ mqtt_connect(mqtt_cli *cli, const char *url)
 	cli->running = 1;
 
 	nftp_vec_alloc(&cli->handleq);
+	cli->ddscli = ddscli;
 
 	// Create a thread to send / recv mqtt msg
 	pthread_create(&cli->thr, NULL, mqtt_loop, (void *) cli);
