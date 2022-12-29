@@ -21,3 +21,17 @@ Note. libfastrtps/libddsc and libnng should be installed.
 ## NOTE
 
 Select topics from configure file is not supported.
+
+## TEST
+
+Tab1. Turn on nanomq
+Tab2. ./dds2mqtt proxy
+
+DDS to MQTT
+Tab3. ./nanomq_cli/nanomq_cli sub --url "mqtt-tcp://127.0.0.1:1883" -t "DDS/HelloWorld"
+Tab4. ./dds2mqtt pub
+
+MQTT to DDS
+Tab5. ./dds2mqtt
+Tab6. ./nanomq_cli/nanomq_cli pub -t DDSCMD/HelloWorld -m aaaaa
+
