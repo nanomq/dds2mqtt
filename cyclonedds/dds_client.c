@@ -49,7 +49,7 @@ dds_client(dds_cli *cli, mqtt_cli *mqttcli)
 	dds_entity_t      topicr;
 	dds_entity_t      reader;
 	dds_entity_t      writer;
-	HelloWorld       *msg;
+	example_struct   *msg;
 	void             *samples[MAX_SAMPLES];
 	dds_sample_info_t infos[MAX_SAMPLES];
 	dds_return_t      rc;
@@ -68,13 +68,13 @@ dds_client(dds_cli *cli, mqtt_cli *mqttcli)
 
 	/* Create a Topic. */
 	topicr = dds_create_topic(
-	    participant, &HelloWorld_desc, "MQTTCMD/HelloWorld", NULL, NULL);
+	    participant, &example_struct_desc, "MQTTCMD/HelloWorld", NULL, NULL);
 	if (topicr < 0)
 		DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topicr));
 
 	/* Create a Topic. for writer */
 	topicw = dds_create_topic(
-	    participant, &HelloWorld_desc, "MQTT/HelloWorld", NULL, NULL);
+	    participant, &example_struct_desc, "MQTT/HelloWorld", NULL, NULL);
 	if (topicw < 0)
 		DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topicw));
 
@@ -122,7 +122,7 @@ dds_client(dds_cli *cli, mqtt_cli *mqttcli)
 
 	/* Initialize sample buffer, by pointing the void pointer within
 	 * the buffer array to a valid sample memory location. */
-	samples[0] = HelloWorld__alloc();
+	samples[0] = example_struct__alloc();
 	nng_msg *mqttmsg;
 	fixed_mqtt_msg midmsg;
 	int len;
@@ -150,7 +150,7 @@ dds_client(dds_cli *cli, mqtt_cli *mqttcli)
 			/* Print Message. */
 			msg = samples[0];
 			printf("=== [Subscriber] Received : ");
-			printf("Message (%"PRId32", %s)\n", msg->index,
+			printf("Message (%"PRId32", %s)\n", msg->int8_test,
 			    msg->message);
 			fflush(stdout);
 
@@ -169,9 +169,9 @@ work:
 		switch (hd->type) {
 		case HANDLE_TO_DDS:
 			mqttmsg = hd->data;
-			midmsg.payload = nng_mqtt_msg_get_publish_payload(mqttmsg, &len);
+			midmsg.message = nng_mqtt_msg_get_publish_payload(mqttmsg, &len);
 			midmsg.len = len;
-			msg = (HelloWorld *) samples[0];
+			msg = (example_struct *) samples[0];
 			MQTT_to_HelloWorld(&midmsg, msg);
 			/* Send the msg received */
 			rc = dds_write(writer, msg);
@@ -194,7 +194,7 @@ work:
 	}
 
 	/* Free the data location. */
-	HelloWorld_free(samples[0], DDS_FREE_ALL);
+	example_struct_free(samples[0], DDS_FREE_ALL);
 
 	/* Deleting the participant will delete all its children recursively as
 	 * well. */
