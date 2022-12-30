@@ -125,7 +125,7 @@ dds_client(dds_cli *cli, mqtt_cli *mqttcli)
 	samples[0] = example_struct__alloc();
 	nng_msg *mqttmsg;
 	fixed_mqtt_msg midmsg;
-	int len;
+	uint32_t len;
 
 	/* Poll until data has been read. */
 	while (true) {
@@ -169,7 +169,7 @@ work:
 		switch (hd->type) {
 		case HANDLE_TO_DDS:
 			mqttmsg = hd->data;
-			midmsg.message = nng_mqtt_msg_get_publish_payload(mqttmsg, &len);
+			midmsg.payload = (char *)nng_mqtt_msg_get_publish_payload(mqttmsg, &len);
 			midmsg.len = len;
 			msg = (example_struct *) samples[0];
 			MQTT_to_HelloWorld(&midmsg, msg);

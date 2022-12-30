@@ -250,7 +250,7 @@ mqtt_loop(void *arg)
 			HelloWorld_to_MQTT(ddsmsg, &mqttmsg);
 			printf("[MQTT] send msg to mqtt.\n");
 			// TODO serialization
-			mqtt_publish(cli, "DDS/HelloWorld", 0, mqttmsg.message,
+			mqtt_publish(cli, "DDS/HelloWorld", 0, (uint8_t *)mqttmsg.payload,
 			    mqttmsg.len);
 			break;
 		default:
@@ -308,7 +308,7 @@ mqtt_subscribe(mqtt_cli *cli, const char *topic, const uint8_t qos)
 	};
 
 	// Sync subscription
-	return nng_mqtt_subscribe(cli->sock, subscriptions, 1, NULL);
+	return nng_mqtt_subscribe(&cli->sock, subscriptions, 1, NULL);
 	/*
 	nng_mqtt_cb_opt cb_opt = {
 	        .sub_ack_cb = sub_callback,
