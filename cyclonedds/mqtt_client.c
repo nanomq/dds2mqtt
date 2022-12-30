@@ -249,8 +249,8 @@ mqtt_loop(void *arg)
 			ddsmsg = hd->data;
 			HelloWorld_to_MQTT(ddsmsg, &mqttmsg);
 			printf("[MQTT] send msg to mqtt.\n");
-
-			mqtt_publish(cli, "DDS/HelloWorld", 0, mqttmsg.payload,
+			// TODO serialization
+			mqtt_publish(cli, "DDS/HelloWorld", 0, mqttmsg.message,
 			    mqttmsg.len);
 			break;
 		default:
