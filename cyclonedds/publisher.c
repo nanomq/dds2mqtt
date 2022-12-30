@@ -19,7 +19,7 @@ int publisher (int argc, char ** argv)
   dds_entity_t topic;
   dds_entity_t writer;
   dds_return_t rc;
-  HelloWorld   msg;
+  example_struct   msg;
   uint32_t status = 0;
   (void)argc;
   (void)argv;
@@ -31,7 +31,7 @@ int publisher (int argc, char ** argv)
 
   /* Create a Topic. */
   topic = dds_create_topic (
-    participant, &HelloWorld_desc, "MQTTCMD/HelloWorld", NULL, NULL);
+    participant, &example_struct_desc, "MQTTCMD/HelloWorld", NULL, NULL);
   if (topic < 0)
     DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topic));
 
@@ -91,11 +91,12 @@ int publisher (int argc, char ** argv)
     */
 
     /* Create a message to write. */
-    msg.index = 1;
-	msg.message = "aaaaaaa";
+    char payload[10] = "aaabbbccc";
+    msg.int8_test = 1;
+	  strncpy(msg.message, payload, 10);
 
     printf("=== [Publisher]  Writing : ");
-    printf("Message (%" PRId32 ", %s)\n", msg.index, msg.message);
+    printf("Message (%" PRId32 ", %s)\n", msg.int8_test, msg.message);
     fflush(stdout);
 
     rc = dds_write(writer, &msg);

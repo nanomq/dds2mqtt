@@ -1,5 +1,5 @@
 #include "vector.h"
-
+#include <stdint.h>
 #include <pthread.h>
 
 struct _vec {
