@@ -32,6 +32,7 @@ HelloWorld_to_MQTT(example_struct *m1, fixed_mqtt_msg *m2)
     str = cJSON_Print(obj);
     m2->payload = str;
     m2->len = 256;
+    cJSON_Delete(obj);
 }
 
 void
@@ -74,4 +75,5 @@ MQTT_to_HelloWorld(fixed_mqtt_msg *m1, example_struct *m2)
     cjson_tmp2 = cJSON_GetObjectItem(cjson_tmp,"message");
     strcpy(es->message, cjson_tmp2->valuestring);
     m2->example_stru = *es;
+    cJSON_Delete(cjson_obj);
 }
