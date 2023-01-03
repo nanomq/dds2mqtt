@@ -45,6 +45,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "cJSON.h"
+
 #ifdef ENABLE_LOCALES
 #include <locale.h>
 #endif
@@ -55,8 +57,6 @@
 #ifdef __GNUC__
 #pragma GCC visibility pop
 #endif
-
-#include "nng/supplemental/nanolib/cJSON.h"
 
 /* define our own boolean type */
 #ifdef true
