@@ -24,14 +24,53 @@ Select topics from configure file is not supported.
 
 ## TEST
 
-Tab1. Turn on nanomq
-Tab2. ./dds2mqtt proxy
+Step1. Turn on nanomq
 
-DDS to MQTT
-Tab3. ./nanomq_cli/nanomq_cli sub --url "mqtt-tcp://127.0.0.1:1883" -t "DDS/HelloWorld"
-Tab4. ./dds2mqtt pub
+Step2. Start the dds2mqtt proxy
 
-MQTT to DDS
-Tab5. ./dds2mqtt
-Tab6. ./nanomq_cli/nanomq_cli pub -t DDSCMD/HelloWorld -m aaaaa
+```
+./dds2mqtt proxy
+```
+
+Test msgs from DDS to MQTT
+
+Step3.
+
+```
+./nanomq_cli/nanomq_cli sub --url "mqtt-tcp://127.0.0.1:1883" -t "DDS/HelloWorld"
+```
+
+Step4.
+
+```
+./dds2mqtt pub
+```
+
+Test msgs from MQTT to DDS
+
+Step5.
+
+```
+./dds2mqtt sub
+```
+
+Step6.
+
+```
+./nanomq_cli/nanomq_cli pub -t DDSCMD/HelloWorld -m '{
+        "int8_test":    1,
+        "uint8_test":   50,
+        "int16_test":   27381,
+        "uint16_test":  1,
+        "int32_test":   0,
+        "uint32_test":  32,
+        "int64_test":   6820785120,
+        "uint64_test":  25855901936,
+        "message":      "aaabbbddd",
+        "example_enum": 0,
+        "example_stru": {
+                "message":      "abc"
+        }
+}'
+```
 
