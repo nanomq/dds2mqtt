@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "subpub.h"
+#include "dds_client.h"
 
 const char *usage = "dds2mqtt {sub|pub|proxy}";
 

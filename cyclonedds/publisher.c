@@ -1,6 +1,6 @@
 #include "dds/dds.h"
 #include "HelloWorld.h"
-#include "subpub.h"
+#include "dds_client.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

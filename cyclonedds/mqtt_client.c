@@ -23,7 +23,7 @@
 #include "HelloWorldMQTTTypes.h"
 #include "mqtt_client.h"
 #include "vector.h"
-#include "subpub.h"
+#include "dds_client.h"
 
 #include <nng/mqtt/mqtt_client.h>
 #include <nng/nng.h>
