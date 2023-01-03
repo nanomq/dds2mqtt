@@ -20,6 +20,7 @@ int publisher (int argc, char ** argv)
   dds_entity_t writer;
   dds_return_t rc;
   example_struct   msg;
+  test_struct sub_msg;
   uint32_t status = 0;
   (void)argc;
   (void)argv;
@@ -91,9 +92,18 @@ int publisher (int argc, char ** argv)
     */
 
     /* Create a message to write. */
-    char payload[10] = "aaabbbccc";
     msg.int8_test = 1;
-	  strncpy(msg.message, payload, 10);
+    msg.uint8_test = 2;
+    msg.int16_test = 4;
+    msg.uint16_test = 8;
+    msg.int32_test = 16;
+    msg.uint32_test = 32;
+    msg.int64_test = 64;
+    msg.uint64_test = 128;
+    strcpy(msg.message,"data->message");
+    strcpy(sub_msg.message,"stru.message");
+    msg.example_enum = 0;
+    msg.example_stru = sub_msg;
 
     printf("=== [Publisher]  Writing : ");
     printf("Message (%" PRId32 ", %s)\n", msg.int8_test, msg.message);
