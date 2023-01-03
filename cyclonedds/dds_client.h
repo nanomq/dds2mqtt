@@ -11,7 +11,8 @@ typedef struct dds_cli dds_cli;
 
 struct dds_cli {
 	int running;
-	nftp_vec *handleq;
+
+	nftp_vec       *handleq;
 	pthread_mutex_t mtx;
 };
 

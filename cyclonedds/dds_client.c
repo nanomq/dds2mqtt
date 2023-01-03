@@ -37,6 +37,7 @@ static int
 dds_client_init(dds_cli *cli)
 {
 	nftp_vec_alloc(&cli->handleq);
+	pthread_mutex_init(&cli->mtx, NULL);
 
 	return 0;
 }
@@ -57,7 +58,7 @@ dds_client(dds_cli *cli, mqtt_cli *mqttcli)
 	uint32_t          status = 0;
 	handle           *hd;
 
-	/* Create handle queue */
+	/* Get current client's handle queue */
 	nftp_vec *handleq = cli->handleq;
 
 	/* Create a Participant. */
@@ -133,16 +134,19 @@ dds_client(dds_cli *cli, mqtt_cli *mqttcli)
 		// Or we need to receive msgs from DDS in a NONBLOCK way and
 		// put it to the handle queue. Sleep when handle queue is
 		// empty.
+		hd = NULL;
 
-		if (nftp_vec_len(handleq)) {
+		pthread_mutex_lock(&cli->mtx);
+		if(nftp_vec_len(handleq))
 			nftp_vec_pop(handleq, (void **) &hd, NFTP_HEAD);
+		pthread_mutex_unlock(&cli->mtx);
+
+		if (hd)
 			goto work;
-		}
 
 		/* Do the actual read.
 		 * The return value contains the number of read samples. */
-		rc =
-		    dds_take(reader, samples, infos, MAX_SAMPLES, MAX_SAMPLES);
+		rc = dds_take(reader, samples, infos, MAX_SAMPLES, MAX_SAMPLES);
 		if (rc < 0)
 			DDS_FATAL("dds_read: %s\n", dds_strretcode(-rc));
 		/* Check if we read some data and it is valid. */
@@ -154,10 +158,14 @@ dds_client(dds_cli *cli, mqtt_cli *mqttcli)
 			    msg->message);
 			fflush(stdout);
 
-			/* Put msg to handleq */
+			/* Make a handle */
 			hd = mk_handle(HANDLE_TO_MQTT, msg, 0);
+
+			/* Put msg to handleq */
+			pthread_mutex_lock(&cli->mtx);
 			nftp_vec_append(handleq, (void *) hd);
-			hd = NULL;
+			pthread_mutex_unlock(&cli->mtx);
+
 			continue;
 		} else {
 			/* Polling sleep. */
@@ -179,12 +187,12 @@ work:
 				DDS_FATAL("dds_write: %s\n", dds_strretcode(-rc));
 			printf("[DDS] Send a msg to dds.\n");
 			free(hd);
-			hd = NULL;
 			break;
 		case HANDLE_TO_MQTT:
 			// Put to MQTTClient's handle queue
+			pthread_mutex_lock(&mqttcli->mtx);
 			nftp_vec_append(mqttcli->handleq, hd);
-			hd = NULL;
+			pthread_mutex_unlock(&mqttcli->mtx);
 			printf("[DDS] Send a msg to mqtt.\n");
 			break;
 		default:
@@ -201,6 +209,9 @@ work:
 	rc = dds_delete(participant);
 	if (rc != DDS_RETCODE_OK)
 		DDS_FATAL("dds_delete: %s\n", dds_strretcode(-rc));
+
+	nftp_vec_free(cli->handleq);
+	pthread_mutex_destroy(&cli->mtx);
 
 	return EXIT_SUCCESS;
 }

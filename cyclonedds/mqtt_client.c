@@ -214,11 +214,16 @@ mqtt_loop(void *arg)
 		// Or we need to receive msgs from nng in a NONBLOCK way and
 		// put it to the handle queue. Sleep when handle queue is
 		// empty.
-		printf("here\n");
-		if (nftp_vec_len(cli->handleq)) {
+		hd = NULL;
+
+		pthread_mutex_lock(&cli->mtx);
+		if (nftp_vec_len(cli->handleq))
 			nftp_vec_pop(cli->handleq, (void **) &hd, NFTP_HEAD);
+		pthread_mutex_unlock(&cli->mtx);
+
+		if (hd)
 			goto work;
-		}
+
 		rv = client_recv(cli, &msg);
 		if (rv < 0) {
 			printf("Errror in recv msg\n");
@@ -226,8 +231,11 @@ mqtt_loop(void *arg)
 		} else if (rv == 0) {
 			// Received msg and put to handleq
 			hd = mk_handle(HANDLE_TO_DDS, msg, 0);
+
+			pthread_mutex_lock(&cli->mtx);
 			nftp_vec_append(cli->handleq, (void *) hd);
-			hd = NULL;
+			pthread_mutex_unlock(&cli->mtx);
+
 			continue;
 		}
 		// else No msgs available
@@ -240,9 +248,11 @@ mqtt_loop(void *arg)
 		case HANDLE_TO_DDS:
 			// Put to DDSClient's handle queue
 			// TODO Lock is needed
+			pthread_mutex_lock(&ddscli->mtx);
 			nftp_vec_append(ddscli->handleq, (void *) hd);
+			pthread_mutex_unlock(&ddscli->mtx);
+
 			printf("[MQTT] send msg to dds.\n");
-			hd = NULL;
 			break;
 		case HANDLE_TO_MQTT:
 			// Translate DDS msg to MQTT format
@@ -273,6 +283,8 @@ mqtt_connect(mqtt_cli *cli, const char *url, void *dc)
 	cli->running = 1;
 
 	nftp_vec_alloc(&cli->handleq);
+	pthread_mutex_init(&cli->mtx, NULL);
+
 	cli->ddscli = ddscli;
 
 	// Create a thread to send / recv mqtt msg
@@ -291,6 +303,9 @@ mqtt_disconnect(mqtt_cli *cli)
 	// TODO Send disconnect msg
 	cli->running = 0;
 
+	if (cli->handleq)
+		nftp_vec_free(cli->handleq);
+	pthread_mutex_destroy(&cli->mtx);
 	return 0;
 }
 

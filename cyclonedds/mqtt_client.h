@@ -28,8 +28,8 @@ struct mqtt_cli {
 	char      *url;
 	pthread_t  thr;
 	int        running;
-	nftp_vec  *handleq;
 
+	nftp_vec       *handleq;
 	pthread_mutex_t mtx;
 
 	// dds client
