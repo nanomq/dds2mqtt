@@ -15,7 +15,7 @@
 
 static mqtt_cli mqttcli;
 
-void print_dds_msg(struct example_struct* msg);
+void print_dds_msg(struct example_struct *msg);
 
 int
 subscriber(int argc, char **argv)
@@ -75,8 +75,9 @@ subscriber(int argc, char **argv)
 			/* Print Message. */
 			msg = (example_struct *) samples[0];
 			printf("=== [Subscriber] Received : ");
-			printf("Message (%" PRId32 ", %s)\n", msg->int8_test,msg->message);
-      print_dds_msg(msg);
+			printf("Message (%" PRId32 ", %s)\n", msg->int8_test,
+			    msg->message);
+			print_dds_msg(msg);
 			fflush(stdout);
 
 			/*
@@ -105,21 +106,20 @@ subscriber(int argc, char **argv)
 }
 
 void
-print_dds_msg(struct example_struct* msg)
+print_dds_msg(struct example_struct *msg)
 {
-    if(msg == NULL){
-        printf("ITS NULL!\n");
-    }
-    printf("int8_test:%d\n",msg->int8_test);
-    printf("int8_test:%d\n",msg->uint8_test);
-    printf("int8_test:%d\n",msg->int16_test);
-    printf("int8_test:%d\n",msg->uint16_test);
-    printf("int8_test:%d\n",msg->int32_test);
-    printf("int8_test:%d\n",msg->uint32_test);
-    printf("int8_test:%d\n",msg->int64_test);
-    printf("int8_test:%d\n",msg->uint64_test);
-
-    printf("message:%s\n",msg->message);
-    printf("example_enum:%d\n",msg->example_enum);
-    printf("example_stru.message:%s\n",msg->example_stru.message);
+	if (msg == NULL) {
+		printf("ITS NULL!\n");
+	}
+	printf("int8_test:%d\n", msg->int8_test);
+	printf("uint8_test:%d\n", msg->uint8_test);
+	printf("int16_test:%d\n", msg->int16_test);
+	printf("uint16_test:%d\n", msg->uint16_test);
+	printf("int32_test:%d\n", msg->int32_test);
+	printf("uint32_test:%d\n", msg->uint32_test);
+	printf("int64_test:%ld\n", msg->int64_test);
+	printf("uint64_test:%ld\n", msg->uint64_test);
+	printf("message:%s\n", msg->message);
+	printf("example_enum:%d\n", msg->example_enum);
+	printf("example_stru.message:%s\n", msg->example_stru.message);
 }
