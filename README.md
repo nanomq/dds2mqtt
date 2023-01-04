@@ -2,13 +2,11 @@
 
 Here we combine dds with mqtt. So DDS node can communicate with MQTT broker.
 
-FastDDS node <--local--> NanoSDK client <--network--> NanoMQ Broker
+DDS node <--local--> NanoSDK client <--network--> NanoMQ Broker
 
 ## Requires
 
-Select one of DDS backends.
-
-+ FastDDS version == 2.8.x
+Select cyclonedds as dds backend.
 
 + CycloneDDS version == 0.10.1
 
@@ -16,7 +14,7 @@ NanoSDK is a MQTT SDK.
 
 + NanoSDK version >= 0.7.5
 
-Note. libfastrtps/libddsc and libnng should be installed.
+Note. libddsc and libnng should be installed.
 
 ## NOTE
 
