@@ -247,7 +247,6 @@ mqtt_loop(void *arg)
 		switch (hd->type) {
 		case HANDLE_TO_DDS:
 			// Put to DDSClient's handle queue
-			// TODO Lock is needed
 			pthread_mutex_lock(&ddscli->mtx);
 			nftp_vec_append(ddscli->handleq, (void *) hd);
 			pthread_mutex_unlock(&ddscli->mtx);
@@ -257,11 +256,10 @@ mqtt_loop(void *arg)
 		case HANDLE_TO_MQTT:
 			// Translate DDS msg to MQTT format
 			ddsmsg = hd->data;
-			HelloWorld_to_MQTT(ddsmsg, &mqttmsg);
 			printf("[MQTT] send msg to mqtt.\n");
-			// TODO serialization
-			mqtt_publish(cli, "DDS/HelloWorld", 0, (uint8_t *)mqttmsg.payload,
-			    mqttmsg.len);
+			HelloWorld_to_MQTT(ddsmsg, &mqttmsg);
+			mqtt_publish(cli, cli->mqttsend_topic, 0,
+			    (uint8_t *)mqttmsg.payload, mqttmsg.len);
 			break;
 		default:
 			printf("Unsupported handle type.\n");

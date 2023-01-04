@@ -34,6 +34,9 @@ struct mqtt_cli {
 
 	// dds client
 	void *ddscli;
+
+	char *mqttrecv_topic;
+	char *mqttsend_topic;
 };
 
 int mqtt_connect(mqtt_cli *cli, const char *url, void *ddscli);

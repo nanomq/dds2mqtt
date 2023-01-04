@@ -25,8 +25,15 @@ dds_proxy(int argc, char **argv)
 
 	dds_client_init(&ddscli);
 
+	// TODO set topics for ddscli & mqttcli
+	// mqtt_set_topics(argv[1], argv[2]);
+	mqttcli.mqttrecv_topic = "DDSCMD/HelloWorld";
+	mqttcli.mqttsend_topic = "DDS/HelloWorld";
+	ddscli.ddsrecv_topic   = "MQTTCMD/HelloWorld";
+	ddscli.ddssend_topic   = "MQTT/HelloWorld";
+
 	mqtt_connect(&mqttcli, MQTT_URL, &ddscli);
-	mqtt_subscribe(&mqttcli, "DDSCMD/HelloWorld", 0);
+	mqtt_subscribe(&mqttcli, mqttcli.mqttrecv_topic, 0);
 
 	dds_client(&ddscli, &mqttcli);
 
@@ -69,13 +76,13 @@ dds_client(dds_cli *cli, mqtt_cli *mqttcli)
 
 	/* Create a Topic. */
 	topicr = dds_create_topic(
-	    participant, &example_struct_desc, "MQTTCMD/HelloWorld", NULL, NULL);
+	    participant, &example_struct_desc, cli->ddsrecv_topic, NULL, NULL);
 	if (topicr < 0)
 		DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topicr));
 
 	/* Create a Topic. for writer */
 	topicw = dds_create_topic(
-	    participant, &example_struct_desc, "MQTT/HelloWorld", NULL, NULL);
+	    participant, &example_struct_desc, cli->ddssend_topic, NULL, NULL);
 	if (topicw < 0)
 		DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topicw));
 

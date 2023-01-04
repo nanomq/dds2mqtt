@@ -14,6 +14,9 @@ struct dds_cli {
 
 	nftp_vec       *handleq;
 	pthread_mutex_t mtx;
+
+	char *ddssend_topic;
+	char *ddsrecv_topic;
 };
 
 int publisher (int argc, char ** argv);
