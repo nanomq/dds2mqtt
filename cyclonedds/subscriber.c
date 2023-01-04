@@ -15,6 +15,8 @@
 
 static mqtt_cli mqttcli;
 
+void print_dds_msg(struct example_struct* msg);
+
 int
 subscriber(int argc, char **argv)
 {
