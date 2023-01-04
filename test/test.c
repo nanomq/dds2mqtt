@@ -2,6 +2,8 @@
 // TODO change to NNG test infra.
 #include <assert.h>
 
+#include "cJSON.h"
+
 int
 main()
 {

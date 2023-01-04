@@ -4,7 +4,7 @@ project(dds2mqtt VERSION 1 LANGUAGES C)
 
 # Select a DDS as backend
 option (DEBUG "ENABLE DEBUG MODE" ON)
-option (TEST  "ENABLE UNIT TEST" ON)
+option (TEST  "ENABLE UNIT TEST" OFF)
 
 if(DEBUG)
   SET(CMAKE_C_FLAGS "-g -Wall")
@@ -25,9 +25,8 @@ idlc_generate(TARGET HelloWorld_lib FILES "src/HelloWorld.idl" WARNINGS no-impli
 message(STATUS "CycloneDDS as backend for dds")
 
 file(GLOB DDS2MQTT_SOURCES "src/*.c")
-file(GLOB DDS2MQTT_SOURCES_CPP "src/*.cpp")
 
-add_executable(dds2mqtt ${DDS2MQTT_SOURCES} ${DDS2MQTT_SOURCES_CPP})
+add_executable(dds2mqtt ${DDS2MQTT_SOURCES})
 target_compile_definitions(dds2mqtt PRIVATE
     $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<STREQUAL:"${CMAKE_BUILD_TYPE}","Debug">>:__DEBUG>
     $<$<BOOL:${INTERNAL_DEBUG}>:__INTERNALDEBUG> # Internal debug activated.
@@ -39,8 +38,9 @@ if(TEST)
   set(UNIT_TEST_PATH ${CMAKE_SOURCE_DIR}/test)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build/tests)
 
-  add_executable(dds2mqtt_test test/test.c)
-  target_link_libraries(dds2mqtt_test ${CMAKE_THREAD_LIBS_INIT})
+  add_executable(dds2mqtt_test test/test.c src/HelloWorldMQTTTypes.c)
+  target_include_directories(dds2mqtt_test PRIVATE src)
+  target_link_libraries(dds2mqtt_test HelloWorld_lib ${CMAKE_THREAD_LIBS_INIT} CycloneDDS::ddsc nng)
   add_test(dds2mqtt_test ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/dds2mqtt_test)
 endif(TEST)
 
